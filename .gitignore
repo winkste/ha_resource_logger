@@ -109,6 +109,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+ha_rec_log_env/
 
 # Spyder project settings
 .spyderproject
@@ -127,3 +128,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+.DS_Store
+src/my_secrets.py
