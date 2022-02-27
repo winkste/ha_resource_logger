@@ -1,13 +1,12 @@
 #!/usr/bin/env python
-""" This script supports user input of power data to log it
+""" This script handles the power logging as class
 
 This script will:
-- support a command line menu to enter gas, power and water counts
-- it will store the data into a local dictionary with date as key and
-    gas / power / water as sub keys
-- it will use the last entry as default if only one or two out of three
-    values are updated
-- the data can also be pushed to home assistant via mqtt
+- generate an object for Gas, Electricity and Water as attributes
+- allows to read out the last values
+- stores new values in RAM
+- checks if data has been changed and gives a feedback
+- supports storage of the data to log file and mqtt broker
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -35,13 +34,12 @@ __version__ = "0.0.1"
 
 ################################################################################
 # Imports
-from paho.mqtt import publish
 import pprint
 import datetime
 
-import my_secrets
 import log
-import cls_screen
+import my_secrets
+import mqtt_ctrl
 
 
 
@@ -50,48 +48,6 @@ import cls_screen
 
 ################################################################################
 # Functions
-def launch_menu():
-    """ Menu handling and program control
-    """
-    power = EnergyLog()
-
-    choice = "g"
-    while choice in ["g", "p", "w", "s", "q"]:
-        cls_screen.clear_screen()
-        print("--- Power Log ---")
-        print(f" (g) - Gas (Counternr: {my_secrets.gas_nr}, last value: {power.get_last_gas()} qm")
-        print(f" (p) - Power (Counternr: {my_secrets.power_nr}, last value: {power.get_last_power()} kWh")
-        print(f" (w) - Water (Counternr: {my_secrets.water_nr}, last value: {power.get_last_water()} qm")
-        print(f" (s) - save and send to HomeAssistant")
-        print(f" (q) - quit")
-        choice = input("Select option: ")
-
-        if choice == "g":
-            new_value = int(input("Enter value (qm): "))
-            power.set_new_gas(new_value)
-        if choice == "p":
-            new_value = int(input("Enter value (kWh): "))
-            power.set_new_power(new_value)
-        if choice == "w":
-            new_value = int(input("Enter value (qm): "))
-            power.set_new_water(new_value)
-        if choice == "s":
-            power.save_new_data()
-            pass
-        if choice == "q":
-            if power.is_data_unsaved():
-                if "y" == input("Unsaved data, do you really want to quit (y/n)? "):
-                    return
-            else:
-                return
-
-def publish_data(topic, payload):
-    '''
-    this function publishes data to the mqtt broker
-    '''
-    publish.single(topic, payload, hostname=my_secrets.hostname,
-                    port=my_secrets.port, client_id=my_secrets.client_id,
-                    auth=my_secrets.auth)
 
 ################################################################################
 # Classes
@@ -105,6 +61,12 @@ class EnergyLog:
     ----------
     object_name : str
         a formatted string of the objects name
+    last_entry : list
+        the last entry in the log file
+    new_time : str
+        the new editing time also used to identify data changes
+    data_dict : dictionary
+        the complete data log which is stored to the log file
 
 
     Methods
@@ -117,23 +79,35 @@ class EnergyLog:
     
     get_last_gas()
         Returns the last gas value
+
+    set_new_gas(gas)
+        Sets the new gas value
     
     get_last_power()
         Returns the last power value
+    
+    set_new_power(power)
+        Sets the new gas value
 
     get_last_water()
         Returns the last water value
+    
+    set_new_water(water)
+        Sets the new water value
+    
+    is_data_unsaved()
+        Returns true if there is unsaved data
+
+    save_new_data()
+        Saves the new data set to log
     """
 
     ############################################################################
     # Member Variables
     obj_name = "ObjectNameDefault"
-    last_entry = []
-    new_gas = 0
-    new_power = 0
-    new_water = 0
+    last_entry = {}
+    new_entry = {}
     new_time = None
-    last_time = None
     data_dict = {}
 
     ############################################################################
@@ -142,6 +116,9 @@ class EnergyLog:
         self.obj_name = name
         self.data_dict = log.data_dict
         self.last_entry = self.data_dict[list(self.data_dict.keys())[-1]]
+        self.new_entry["gas"] = self.get_last_gas()
+        self.new_entry["power"] = self.get_last_power()
+        self.new_entry["water"] = self.get_last_water()
 
     def get_object_name(self):
         """Returns the object name
@@ -179,7 +156,7 @@ class EnergyLog:
         gas : int
             The new gas value
         """
-        self.last_entry["gas"] = gas
+        self.new_entry["gas"] = gas
         self.new_time = datetime.datetime.now().strftime("%Y-%m-%d")
 
     def get_last_power(self):
@@ -199,7 +176,7 @@ class EnergyLog:
         power : int
             The new power value
         """
-        self.last_entry["power"] = power
+        self.new_entry["power"] = power
         self.new_time = datetime.datetime.now().strftime("%Y-%m-%d")
 
     def set_new_water(self, water):
@@ -210,7 +187,7 @@ class EnergyLog:
         gas : int
             The new water value
         """
-        self.last_entry["water"] = water
+        self.new_entry["water"] = water
         self.new_time = datetime.datetime.now().strftime("%Y-%m-%d")
     
     def get_last_water(self):
@@ -240,24 +217,23 @@ class EnergyLog:
         """
         if self.is_data_unsaved():
             file = open("src/log" + '.py', 'w')
-            self.data_dict[self.new_time] = self.last_entry
+            self.data_dict[self.new_time] = self.new_entry
             file.write('data_dict =' + pprint.pformat(self.data_dict))
             file.close()
 
-            val = self.last_entry["gas"] - my_secrets.gas_last_year
-            publish_data("std/dev301/s/ener_wat/gas", val)
-            val = self.last_entry["power"] - my_secrets.power_last_year
-            publish_data("std/dev301/s/ener_wat/power", val)
-            val = self.last_entry["water"] - my_secrets.water_last_year
-            publish_data("std/dev301/s/ener_wat/water", val)
+            val = self.new_entry["gas"] - my_secrets.gas_last_year
+            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/gas", val)
+            val = self.new_entry["power"] - my_secrets.power_last_year
+            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/power", val)
+            val = self.new_entry["water"] - my_secrets.water_last_year
+            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/water", val)
             val = self.new_time
-            publish_data("std/dev301/s/ener_wat/date", val)
+            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/date", val)
             self.new_time = None
 
 ################################################################################
 # Scripts
 if __name__ == "__main__":
     # execute only if run as a script
-    launch_menu()
-
-# '2022-02-20': {'gas': 3825, 'power': 51661, 'water': 818}}
+    pass
+    
