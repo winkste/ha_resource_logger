@@ -15,3 +15,7 @@ COPY /src/templates/index.html /bin/templates/index.html
 RUN chmod +x /bin/app.py
 #CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]
 CMD [ "python3", "/bin/app.py"]
+
+
+# docker build --tag pyth-ha-rec .
+# docker run --publish 5000:5000 pyth-ha-rec
