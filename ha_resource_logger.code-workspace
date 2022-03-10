@@ -4,5 +4,7 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"python.defaultInterpreterPath": "/Users/stephan_wink/workspace_github/ha_resource_logger/ha_rec_log_env/bin/python3"
+	}
 }
