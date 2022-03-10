@@ -73,28 +73,28 @@ class EnergyLog:
     -------
     get_object_name()
         Returns the name of the object
-    
+
     set_object_name(object_name = "DefaultObject")
         Sets the name of the object
-    
+
     get_last_gas()
         Returns the last gas value
 
     set_new_gas(gas)
         Sets the new gas value
-    
+
     get_last_power()
         Returns the last power value
-    
+
     set_new_power(power)
         Sets the new gas value
 
     get_last_water()
         Returns the last water value
-    
+
     set_new_water(water)
         Sets the new water value
-    
+
     is_data_unsaved()
         Returns true if there is unsaved data
 
@@ -138,7 +138,7 @@ class EnergyLog:
             The new name of the object
         """
         self.obj_name = object_name
-    
+
     def get_last_gas(self):
         """Returns the last gas value
 
@@ -147,7 +147,7 @@ class EnergyLog:
         int : Last gas value
         """
         return self.last_entry["gas"]
-    
+
     def set_new_gas(self, gas):
         """Sets the new gas value
 
@@ -167,7 +167,7 @@ class EnergyLog:
         int : Last power value
         """
         return self.last_entry["power"]
-    
+
     def set_new_power(self, power):
         """Sets the new gas value
 
@@ -189,7 +189,7 @@ class EnergyLog:
         """
         self.new_entry["water"] = water
         self.new_time = datetime.datetime.now().strftime("%Y-%m-%d")
-    
+
     def get_last_water(self):
         """Returns the last water value
 
@@ -216,7 +216,7 @@ class EnergyLog:
         bool : True if save was successful
         """
         if self.is_data_unsaved():
-            file = open("src/log" + '.py', 'w')
+            file = open("log" + '.py', 'w')
             self.data_dict[self.new_time] = self.new_entry
             file.write('data_dict =' + pprint.pformat(self.data_dict))
             file.close()
@@ -236,4 +236,3 @@ class EnergyLog:
 if __name__ == "__main__":
     # execute only if run as a script
     pass
-    
