@@ -1,6 +1,14 @@
 {% extends "base.html" %}
-{% block title %}Historie{% endblock %}
+
+{% block title %}
+    Historie
+{% endblock %}
 
 {% block content2 %}
-<p>Hier kommt die Historie raus.</p>
+    <font size = 5>Verbrauch - Datensätze </font>
+    <hr>
+    <p>Datum, Gas, Strom, Wasser</p>
+    {% for key, val in pwr_dict.items() %}
+        <p>{{key}}, {{val['gas']}}, {{val['power']}}, {{val['water']}}</p>
+    {% endfor %}
 {% endblock %}

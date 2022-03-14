@@ -36,7 +36,6 @@ __version__ = "0.0.1"
 ################################################################################
 # Imports
 from flask import Flask, redirect, url_for, render_template, request, session, flash
-from energy_log import EnergyLog
 from flask_bootstrap import Bootstrap
 from flask_nav import Nav
 from flask_nav.elements import *
@@ -44,6 +43,7 @@ from dominate.tags import img
 from datetime import timedelta
 
 import my_secrets
+from energy_log import EnergyLog
 
 ################################################################################
 # Variables
@@ -68,36 +68,6 @@ nav.init_app(app)
 
 ################################################################################
 # Functions
-
-# start home page
-@app.route("/power", methods = ["POST", "GET"])
-def get_power():
-    if "user" in session:
-        if request.method == "POST":
-            power = EnergyLog()
-            new_value = int(request.form["gas"])
-            power.set_new_gas(new_value)
-            new_value = int(request.form["ele"])
-            power.set_new_power(new_value)
-            new_value = int(request.form["water"])
-            power.set_new_water(new_value)
-            power.save_new_data()
-            return f"<h1>data successfully stored</h1>"
-        else:    
-            return render_template("power.html")
-    else:
-        flash(f"You are not logged in", "info")
-        return redirect(url_for("get_login"))
-
-
-@app.route("/hist", methods = ["GET"])
-def get_hist():
-    if "user" in session:
-        return render_template("history.html")
-    else:
-        flash(f"You are not logged in", "info")
-        return redirect(url_for("get_login"))
-
 @app.route("/", methods = ["POST", "GET"])
 def get_login():
     if request.method == "POST":
@@ -123,6 +93,41 @@ def get_login():
             return redirect(url_for("get_power")) 
  
     return render_template("login.html")
+
+
+@app.route("/power", methods = ["POST", "GET"])
+def get_power():
+    if "user" in session:
+        if request.method == "POST":
+            power = EnergyLog()
+            new_value = int(request.form["gas"])
+            power.set_new_gas(new_value)
+            new_value = int(request.form["ele"])
+            power.set_new_power(new_value)
+            new_value = int(request.form["water"])
+            power.set_new_water(new_value)
+            power.save_new_data()
+            return f"<h1>data successfully stored</h1>"
+        else:    
+            return render_template("power.html")
+    else:
+        flash(f"You are not logged in", "info")
+        return redirect(url_for("get_login"))
+
+
+@app.route("/hist", methods = ["GET"])
+def get_hist():
+    if "user" in session:
+        power = EnergyLog()
+        pwr_dict = power.get_history()
+        print(f"Datum, Gas, Strom, Wasser")
+        for key, val in pwr_dict.items():
+            print(f"{key}, {val['gas']}, {val['power']}, {val['water']}")
+        return render_template("history.html", pwr_dict=pwr_dict)
+    else:
+        flash(f"You are not logged in", "info")
+        return redirect(url_for("get_login"))
+
 
 @app.route("/logout")
 def get_logout():

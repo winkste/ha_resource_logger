@@ -231,6 +231,15 @@ class EnergyLog:
             mqtt_ctrl.publish_data("std/dev301/s/ener_wat/date", val)
             self.new_time = None
 
+    def get_history(self):
+        """Returns the dictionary with all history
+
+        Return
+        ------
+        dict : history
+        """
+        return(self.data_dict)
+
 ################################################################################
 # Scripts
 if __name__ == "__main__":
