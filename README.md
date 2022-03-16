@@ -6,6 +6,8 @@ This project gives you two simple user interface ways to track manually your use
 - web page based
 
 The web page based interface is also available in a docker container image.
+<img width="633" alt="login" src="https://user-images.githubusercontent.com/9803344/158521520-496c97f5-c0b3-4f60-9067-e4a052c8178a.png">
+
 
 The values are stored in a python file as dictionary.
 
