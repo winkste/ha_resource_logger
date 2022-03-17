@@ -1,0 +1,20 @@
+
+body {
+  color:black
+}
+ 
+nav.navbar li {
+  display: block;
+  width: 150px;
+  margin-right: 10px;
+  float: left;
+}
+
+nav.navbar ul > li > a:hover {
+  color: black !important;
+  font-weight: bold;
+}
+
+h1 {
+  clear: both;
+}

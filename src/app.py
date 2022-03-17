@@ -70,6 +70,13 @@ nav.init_app(app)
 # Functions
 @app.route("/", methods = ["POST", "GET"])
 def get_login():
+    """
+    Generates the login page for flask
+
+    Return
+    --------
+    obj : returns a page that is displayed in the browser
+    """
     if request.method == "POST":
         user = request.form["username"]
         pwd = request.form["pwd"]
@@ -97,6 +104,13 @@ def get_login():
 
 @app.route("/power", methods = ["POST", "GET"])
 def get_power():
+    """
+    Generates the power page for flask
+
+    Return
+    --------
+    obj : returns a page that is displayed in the browser
+    """
     if "user" in session:
         if request.method == "POST":
             power = EnergyLog()
@@ -117,6 +131,13 @@ def get_power():
 
 @app.route("/hist", methods = ["GET"])
 def get_hist():
+    """
+    Generates the history log page for flask
+
+    Return
+    --------
+    obj : returns a page that is displayed in the browser
+    """
     if "user" in session:
         power = EnergyLog()
         pwr_dict = power.get_history()
@@ -131,6 +152,13 @@ def get_hist():
 
 @app.route("/logout")
 def get_logout():
+    """
+    Generates the logout page for flask
+    
+    Return
+    --------
+    obj : returns a page that is displayed in the browser
+    """
     if "user" in session:
         user = session["user"]
         flash(f"{user} have been logged out.", "info")
