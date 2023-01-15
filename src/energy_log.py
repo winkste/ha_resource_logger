@@ -40,7 +40,7 @@ import datetime
 import log
 import my_secrets
 import mqtt_ctrl
-
+import inspect
 
 
 ################################################################################
@@ -119,6 +119,7 @@ class EnergyLog:
         self.new_entry["gas"] = self.get_last_gas()
         self.new_entry["power"] = self.get_last_power()
         self.new_entry["water"] = self.get_last_water()
+        self.new_time = None
 
     def get_object_name(self):
         """Returns the object name
@@ -216,21 +217,31 @@ class EnergyLog:
         bool : True if save was successful
         """
         if self.is_data_unsaved():
-            file = open("log" + '.py', 'w')
-            self.data_dict[self.new_time] = self.new_entry
-            file.write('data_dict =' + pprint.pformat(self.data_dict))
-            file.close()
-
-            val = self.new_entry["gas"] - my_secrets.gas_last_year
-            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/gas", val)
-            val = self.new_entry["power"] - my_secrets.power_last_year
-            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/power", val)
-            val = self.new_entry["water"] - my_secrets.water_last_year
-            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/water", val)
-            val = self.new_time
-            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/date", val)
+            self._save_data_in_log_file()
+            #self._send_data_via_mqtt()
             self.new_time = None
-
+    
+    def _save_data_in_log_file(self):
+        """Saves the new data set to log
+        """
+        #file = open("log" + '.py', 'w')
+        file = open(inspect.getfile(log), "w")
+        self.data_dict[self.new_time] = self.new_entry
+        file.write('data_dict =' + pprint.pformat(self.data_dict))
+        file.close()
+    
+    def _send_data_via_mqtt(self):
+        """Sends the new data set to mqtt broker
+        """
+        val = self.new_entry["gas"] - my_secrets.gas_last_year
+        mqtt_ctrl.publish_data("std/dev301/s/ener_wat/gas", val)
+        val = self.new_entry["power"] - my_secrets.power_last_year
+        mqtt_ctrl.publish_data("std/dev301/s/ener_wat/power", val)
+        val = self.new_entry["water"] - my_secrets.water_last_year
+        mqtt_ctrl.publish_data("std/dev301/s/ener_wat/water", val)
+        val = self.new_time
+        mqtt_ctrl.publish_data("std/dev301/s/ener_wat/date", val)
+    
     def get_history(self):
         """Returns the dictionary with all history
 

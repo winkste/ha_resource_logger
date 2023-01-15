@@ -22,13 +22,12 @@ The dialogs are:
 - Historie (Plot all collected data)
 <img width="628" alt="log" src="https://user-images.githubusercontent.com/9803344/158741685-e9d79aad-cc21-4940-bae7-3bc220a30b0a.png">
 - Logout (redirects to login)
-
 <img width="633" alt="login" src="https://user-images.githubusercontent.com/9803344/158521520-496c97f5-c0b3-4f60-9067-e4a052c8178a.png">
 
 
 The values are stored in a python file as dictionary.
 
-Additional the actual year consumption is calculated giving the year end reading in the secrets file. 
+Additional the actual year consumption is calculated giving the year end reading in the secrets file.
 
 These actual consumptions are populated to a mqtt broker.
 
@@ -57,16 +56,30 @@ users = {"user": "pwd"}
 ````
 source python3 -m venv ha_rec_log_env
 
-pip install -r requirements.txt 
+pip install -r requirements.txt
 
 source ha_rec_log_env/bin/activate
 ````
 #### Run the application
-````
 web interface:
+```
 python src/app.py  
-
+```
 command line interface:
-python src/cmd_main.py 
-````
-#### Build and deploy the Docker container
+```
+python src/cmd_main.py
+```
+#### Using the Docker container
+build the image:
+```
+docker build --tag pyth-ha-rec .
+```
+run the image:
+```
+docker run --publish 5000:5000 pyth-ha-rec
+```
+save and deploy the image:
+```
+docker save -o pyth-ha-rec.tar pyth-ha-rec
+
+```

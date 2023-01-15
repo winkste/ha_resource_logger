@@ -35,6 +35,9 @@ __version__ = "0.0.1"
 
 ################################################################################
 # Imports
+import collections.abc
+import collections
+collections.MutableMapping = collections.abc.MutableMapping
 from flask import Flask, redirect, url_for, render_template, request, session, flash
 from flask_bootstrap import Bootstrap
 from flask_nav import Nav
@@ -121,8 +124,9 @@ def get_power():
             new_value = int(request.form["water"])
             power.set_new_water(new_value)
             power.save_new_data()
-            return f"<h1>data successfully stored</h1>"
-        else:    
+            flash(f"data successfully stored")
+            return redirect(url_for("get_hist"))
+        else:
             return render_template("power.html")
     else:
         flash(f"You are not logged in", "info")
@@ -173,5 +177,5 @@ def get_logout():
 ################################################################################
 # Scripts
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0", port=5050)
 

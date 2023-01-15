@@ -1,4 +1,4 @@
-FROM python:3.11.0a1-alpine3.14
+FROM python:3.10.9-alpine3.17
 
 COPY requirements.txt ./
 RUN pip install --no-cache-dir --upgrade pip && \
@@ -11,7 +11,12 @@ COPY /src/mqtt_ctrl.py /bin/mqtt_ctrl.py
 COPY /src/my_secrets.py /bin/my_secrets.py
 COPY /src/app.py /bin/app.py
 COPY /src/templates/base.html /bin/templates/base.html
-COPY /src/templates/index.html /bin/templates/index.html
+COPY /src/templates/history.html /bin/templates/history.html
+COPY /src/templates/login.html /bin/templates/login.html
+COPY /src/templates/logout.html /bin/templates/logout.html
+COPY /src/templates/power.html /bin/templates/power.html
+COPY /src/static/img/logo.png /bin/static/img/logo.png
+COPY /src/static/styles/style.css /bin/static/styles/style.css
 RUN chmod +x /bin/app.py
 #CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]
 CMD [ "python3", "/bin/app.py"]
