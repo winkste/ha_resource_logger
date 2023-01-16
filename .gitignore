@@ -131,3 +131,7 @@ dmypy.json
 .pyre/
 .DS_Store
 src/my_secrets.py
+
+# Exclude tar archives
+*.tar
+

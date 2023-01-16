@@ -218,7 +218,7 @@ class EnergyLog:
         """
         if self.is_data_unsaved():
             self._save_data_in_log_file()
-            #self._send_data_via_mqtt()
+            self._send_data_via_mqtt()
             self.new_time = None
     
     def _save_data_in_log_file(self):

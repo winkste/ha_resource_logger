@@ -74,6 +74,10 @@ build the image:
 ```
 docker build --tag pyth-ha-rec .
 ```
+build the image on a MacBook Air M2 supporting Synology platform:
+```
+docker build --tag pyth-ha-rec . --platform linux/amd64
+```
 run the image:
 ```
 docker run --publish 5000:5000 pyth-ha-rec

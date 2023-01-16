@@ -177,5 +177,8 @@ def get_logout():
 ################################################################################
 # Scripts
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5050)
+    # used to run on the mac:
+    #app.run(debug=True, host="0.0.0.0", port=5050)
+    # used to build the docker container for synology:
+    app.run(debug=True, host="0.0.0.0")
 
