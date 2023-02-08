@@ -35,18 +35,23 @@ __version__ = "0.0.1"
 
 ################################################################################
 # Imports
+
 import collections.abc
 import collections
+from datetime import timedelta
 collections.MutableMapping = collections.abc.MutableMapping
 from flask import Flask, redirect, url_for, render_template, request, session, flash
 from flask_bootstrap import Bootstrap
 from flask_nav import Nav
-from flask_nav.elements import *
+from flask_nav.elements import Navbar, View
 from dominate.tags import img
-from datetime import timedelta
 
-import my_secrets
-from energy_log import EnergyLog
+import mqtt_secrets
+import mqtt_ctrl
+#from energy_log import EnergyLog
+from resource_mgr import ResMgr
+import plotter
+
 
 ################################################################################
 # Variables
@@ -55,6 +60,7 @@ topbar = Navbar(logo,
                 View('Login', 'get_login'),
                 View('Zählerstände', 'get_power'),
                 View('Historie', 'get_hist'),
+                View('Analysis', 'get_analysis'),
                 View('Logout', 'get_logout')
                 )
 
@@ -83,32 +89,32 @@ def get_login():
     if request.method == "POST":
         user = request.form["username"]
         pwd = request.form["pwd"]
-        if user in my_secrets.users.keys():
-            if my_secrets.users[user] == pwd:
+        if user in mqtt_secrets.USERS.keys():
+            if mqtt_secrets.USERS[user] == pwd:
                 session["user"] = user
                 session.permanent = True
                 flash(f"{user} sucessful logged in.", "info")
                 return redirect(url_for("get_power"))
             else:
                 flash(f"wrong password for user: {user}", "info")
-                return redirect(url_for("get_login")) 
+                return redirect(url_for("get_login"))
         else:
             flash(f"unknown user: {user}", "info")
-            return redirect(url_for("get_login"))    
+            return redirect(url_for("get_login"))
 
-    else:   
+    else:
         if "user" in session:
             user = session["user"]
             flash(f"{user} already logged in", "info")
-            return redirect(url_for("get_power")) 
- 
+            return redirect(url_for("get_power"))
+
     return render_template("login.html")
 
 
 @app.route("/power", methods = ["POST", "GET"])
 def get_power():
     """
-    Generates the power page for flask
+    Generates the resource entry page for flask
 
     Return
     --------
@@ -116,20 +122,28 @@ def get_power():
     """
     if "user" in session:
         if request.method == "POST":
-            power = EnergyLog()
+            res_mgr = ResMgr()
             new_value = int(request.form["gas"])
-            power.set_new_gas(new_value)
+            res_mgr.set_new_gas(new_value)
             new_value = int(request.form["ele"])
-            power.set_new_power(new_value)
+            res_mgr.set_new_power(new_value)
             new_value = int(request.form["water"])
-            power.set_new_water(new_value)
-            power.save_new_data()
-            flash(f"data successfully stored")
-            return redirect(url_for("get_hist"))
+            res_mgr.set_new_water(new_value)
+            res_mgr.save_new_data()
+            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/gas",
+                                    int(res_mgr.get_gas_year_consum()))
+            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/power",
+                                    int(res_mgr.get_power_year_consum()))
+            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/water",
+                                    int(res_mgr.get_water_year_consum()))
+            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/date",
+                                    res_mgr.get_last_date())
+            flash("data successfully stored and published")
+            return redirect(url_for("get_analysis"))
         else:
             return render_template("power.html")
     else:
-        flash(f"You are not logged in", "info")
+        flash("You are not logged in", "info")
         return redirect(url_for("get_login"))
 
 
@@ -143,14 +157,30 @@ def get_hist():
     obj : returns a page that is displayed in the browser
     """
     if "user" in session:
-        power = EnergyLog()
-        pwr_dict = power.get_history()
-        print(f"Datum, Gas, Strom, Wasser")
-        for key, val in pwr_dict.items():
-            print(f"{key}, {val['gas']}, {val['power']}, {val['water']}")
-        return render_template("history.html", pwr_dict=pwr_dict)
+        res_mgr = ResMgr()
+        res_str = res_mgr.get_history()
+        return render_template("history.html", res_data=res_str)
     else:
-        flash(f"You are not logged in", "info")
+        flash("You are not logged in", "info")
+        return redirect(url_for("get_login"))
+
+@app.route("/anal", methods = ["GET"])
+def get_analysis():
+    """
+    Generates the analysis page for flask
+
+    Return
+    --------
+    obj : returns a page that is displayed in the browser
+    """
+    if "user" in session:
+        graph_json_count = plotter.plot_overall_counters_to_json()
+        graph_json_consum = plotter.plot_consumption_to_json()
+        return render_template('analysis.html',
+                                graphJSON1=graph_json_count,
+                                graphJSON2=graph_json_consum)
+    else:
+        flash("You are not logged in", "info")
         return redirect(url_for("get_login"))
 
 
@@ -178,7 +208,6 @@ def get_logout():
 # Scripts
 if __name__ == "__main__":
     # used to run on the mac:
-    #app.run(debug=True, host="0.0.0.0", port=5050)
+    app.run(debug=True, host="0.0.0.0", port=5050)
     # used to build the docker container for synology:
-    app.run(debug=True, host="0.0.0.0")
-
+    #app.run(debug=True, host="0.0.0.0")

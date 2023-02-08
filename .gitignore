@@ -126,6 +126,7 @@ ha_rec_env/
 .mypy_cache/
 .dmypy.json
 dmypy.json
+mqtt_secrets.py
 
 # Pyre type checker
 .pyre/

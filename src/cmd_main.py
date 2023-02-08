@@ -35,12 +35,10 @@ __version__ = "0.0.1"
 
 ################################################################################
 # Imports
-
-import my_secrets
 import cls_screen
-from energy_log import EnergyLog
-
-
+from resource_mgr import ResMgr
+import mqtt_ctrl
+import plotter
 
 ################################################################################
 # Variables
@@ -50,17 +48,20 @@ from energy_log import EnergyLog
 def launch_menu():
     """ Menu handling and program control
     """
-    power = EnergyLog()
+    power = ResMgr()
 
     choice = "g"
-    while choice in ["g", "p", "w", "s", "q"]:
+    while choice in ["g", "p", "w", "s", "q", "l", "m"]:
         cls_screen.clear_screen()
         print("--- Power Log ---")
-        print(f" (g) - Gas (Counternr: {my_secrets.gas_nr}, last value: {power.get_last_gas()} qm")
-        print(f" (p) - Power (Counternr: {my_secrets.power_nr}, last value: {power.get_last_power()} kWh")
-        print(f" (w) - Water (Counternr: {my_secrets.water_nr}, last value: {power.get_last_water()} qm")
-        print(f" (s) - save and send to HomeAssistant")
-        print(f" (q) - quit")
+        print(f" (g) - Gas (Counternr: {power.get_gas_serial()}, last value: {power.get_last_gas()} qm")
+        print(f" (p) - Power (Counternr: {power.get_power_serial()}, last value: {power.get_last_power()} kWh")
+        print(f" (w) - Water (Counternr: {power.get_water_serial()}, last value: {power.get_last_water()} qm")
+        print(" (s) - save to file")
+        print(" (l) - plot the data to picture file")
+        print(" (m) - mqtt publish")
+        print(" (q) - quit")
+        print(f"Last update stored: {power.get_last_date()}")
         choice = input("Select option: ")
 
         if choice == "g":
@@ -74,7 +75,17 @@ def launch_menu():
             power.set_new_water(new_value)
         if choice == "s":
             power.save_new_data()
-            pass
+        if choice == "l":
+            plotter.direct_plot_consumption()
+        if choice == "m":
+            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/gas",
+                                    int(power.get_gas_year_consum()))
+            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/power",
+                                    int(power.get_power_year_consum()))
+            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/water",
+                                    int(power.get_water_year_consum()))
+            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/date",
+                                    power.get_last_date())
         if choice == "q":
             if power.is_data_unsaved():
                 if "y" == input("Unsaved data, do you really want to quit (y/n)? "):

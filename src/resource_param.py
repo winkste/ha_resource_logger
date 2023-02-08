@@ -1,9 +1,5 @@
 #!/usr/bin/env python
-""" This script handles the mqtt publishing
-
-This script will:
-This script uses my_secrets variables to connect to the MQTT broker and
-publishes the data.
+""" This script handles the resource parameters
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
@@ -28,49 +24,25 @@ __maintainer__ = "winkste"
 __status__ = "Development"
 __version__ = "0.0.1"
 
-
 ################################################################################
 # Imports
-from time import sleep
-from paho.mqtt import publish
-import mqtt_secrets
 
 ################################################################################
 # Variables
 
+GAS_NR:str          = "gas id"
+POWER_NR:str        = "power id"
+WATER_NR:str        = "water id"
+
+GAS_LAST_YEAR:int   = 4110
+POWER_LAST_YEAR:int = 54775
+WATER_LAST_YEAR:int = 45
+
 ################################################################################
 # Functions
-def publish_data(topic, payload = ""):
-    '''
-    this function publishes data to the mqtt broker
-
-    Parameters
-    ----------
-    topic : str
-        This is the topic of the publication
-    payload : str, optional
-        This is the payload of the publication
-    '''
-    publish.single(topic, payload, hostname=mqtt_secrets.HOST_NAME,
-                    port=mqtt_secrets.PORT, client_id=mqtt_secrets.CLIENT_ID,
-                    auth=mqtt_secrets.AUTH)
-
-def mqtt_ctrl_test():
-    '''
-    this function publishes test data to the mqtt broker
-    the data is a counter incrementing to 100 and the cycle time is 2secs.
-
-    '''
-    for i in range(0,100):
-        publish_data("std/dev301/s/mqtt_test/", f"{i}")
-        sleep(2)
 
 ################################################################################
 # Classes
 
 ################################################################################
 # Scripts
-if __name__ == "__main__":
-    # execute only if run as a script
-    mqtt_ctrl_test()
-    

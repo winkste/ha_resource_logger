@@ -1,14 +1,50 @@
-hostname = ""
-port = 1883
-client_id = ""
-auth = {'username':"user", 'password':"pwd"}
+#!/usr/bin/env python
+""" This script handles the secrets data
 
-gas_nr = "gas id"
-power_nr = "power id"
-water_nr = "water id"
+This script will:
+This script uses my_secrets variables to connect to the MQTT broker and
+publishes the data.
 
-gas_last_year = 0
-power_last_year = 0
-water_last_year = 0
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
 
-users = {"user": "pwd"}
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program. If not, see <http://www.gnu.org/licenses/>.
+"""
+
+__author__ = "winkste"
+__contact__ = "via github account"
+__copyright__ = "Copyright 2022, WShield"
+__date__ = "2022/02/20"
+__deprecated__ = False
+__license__ = "GPLv3"
+__maintainer__ = "winkste"
+__status__ = "Development"
+__version__ = "0.0.1"
+
+################################################################################
+# Imports
+
+################################################################################
+# Variables
+
+HOST_NAME = ""
+PORT = 1883
+CLIENT_ID = ""
+AUTH = {'username':"user", 'password':"pwd"}
+USERS = {"user": "pwd"}
+
+################################################################################
+# Functions
+
+################################################################################
+# Classes
+
+################################################################################
+# Scripts

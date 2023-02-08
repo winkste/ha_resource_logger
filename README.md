@@ -31,8 +31,8 @@ Additional the actual year consumption is calculated giving the year end reading
 
 These actual consumptions are populated to a mqtt broker.
 
-###Build the program and execute
-####Secrets configuration
+### Build the program and execute
+#### Secrets configuration
 
 ```
 my_secrets.py:
