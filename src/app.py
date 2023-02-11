@@ -51,10 +51,12 @@ import mqtt_ctrl
 #from energy_log import EnergyLog
 from resource_mgr import ResMgr
 import plotter
+import parameter
 
 
 ################################################################################
 # Variables
+port_number:int = parameter.PORT_NUMBER
 logo = img(src='./static/img/logo.png', height="50", width="50", style="margin-top:-15px")
 topbar = Navbar(logo,
                 View('Login', 'get_login'),
@@ -207,7 +209,5 @@ def get_logout():
 ################################################################################
 # Scripts
 if __name__ == "__main__":
-    # used to run on the mac:
-    app.run(debug=True, host="0.0.0.0", port=5050)
-    # used to build the docker container for synology:
-    #app.run(debug=True, host="0.0.0.0")
+    app.run(debug=True, host="0.0.0.0", port=port_number)
+

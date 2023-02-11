@@ -27,30 +27,33 @@ __version__ = "0.0.1"
 ################################################################################
 # Imports
 import pandas as pd
+import parameter
 
 ################################################################################
 # Variables
-FILE_NAME:str = "./src/log.csv"
+actuals_file_name:str = parameter.DATA_FOLDER_PATH + "actuals.csv"
 
 ################################################################################
 # Functions
-def load_data()->pd.DataFrame:
-    """Load the data to dataframe
+
+def load_actuals_data()->pd.DataFrame:
+    """Load the actuals data to dataframe
 
     Returns:
         pd.dataFrame: Data frame 
     """
-    return pd.read_csv(FILE_NAME)
+    return pd.read_csv(actuals_file_name)
 
-def store_data(data_frame:pd.DataFrame)->None:
-    """Capsulates the data storage
+def store_actuals_data(data_frame:pd.DataFrame)->None:
+    """Capsulates the actuals data storage
 
     Args:
         data_frame (pd.DataFrame): dataframe to be stored
     """
-    data_frame.to_csv(FILE_NAME, index=False)
+    data_frame.to_csv(actuals_file_name, index=False)
 
 ################################################################################
 # Classes
+
 ################################################################################
 # Scripts

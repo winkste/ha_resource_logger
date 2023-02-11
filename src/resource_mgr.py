@@ -38,7 +38,7 @@ import copy
 import datetime
 import pandas as pd
 import data_handler
-import resource_param
+import parameter
 
 ################################################################################
 # Variables
@@ -56,7 +56,7 @@ class ResMgr:
         - Water
     """
     ############################################################################
-    # Member Variables
+    # Class Variables
 
     ############################################################################
     # Member Functions
@@ -81,7 +81,7 @@ class ResMgr:
         Returns:
             None
         """
-        self.data_frame = data_handler.load_data()
+        self.data_frame = data_handler.load_actuals_data()
         # sort the data frame according to the dates
         self.data_frame.sort_values(by="date", inplace = True)
         # clean data frame from any duplicated dates
@@ -180,7 +180,7 @@ class ResMgr:
         if self.is_data_unsaved():
             self.data_frame = pd.concat([self.data_frame, self.new_entry.to_frame().T],
                                             ignore_index=True)
-            data_handler.store_data(self.data_frame)
+            data_handler.store_actuals_data(self.data_frame)
             self._initialize_object_data()
 
     def get_last_date(self)->datetime:
@@ -210,7 +210,7 @@ class ResMgr:
         Return:
             int:gas year consumption
         """
-        return self.get_last_gas() - resource_param.GAS_LAST_YEAR
+        return self.get_last_gas() - parameter.GAS_LAST_YEAR
 
     def get_power_year_consum(self)->int:
         """This function returns the overall year power consumtion
@@ -218,7 +218,7 @@ class ResMgr:
         Return:
             int:power year consumption
         """
-        return self.get_last_power() - resource_param.POWER_LAST_YEAR
+        return self.get_last_power() - parameter.POWER_LAST_YEAR
 
     def get_water_year_consum(self)->int:
         """This function returns the overall year water consumtion
@@ -226,7 +226,7 @@ class ResMgr:
         Return:
             int:water year consumption
         """
-        return self.get_last_water() - resource_param.WATER_LAST_YEAR
+        return self.get_last_water() - parameter.WATER_LAST_YEAR
 
     def get_gas_serial(self)->str:
         """This function returns the gas serial number
@@ -234,7 +234,7 @@ class ResMgr:
         Return:
             str:serial number
         """
-        return resource_param.GAS_NR
+        return parameter.GAS_NR
 
     def get_power_serial(self)->str:
         """This function returns the power serial number
@@ -242,7 +242,7 @@ class ResMgr:
         Return:
             str:serial number
         """
-        return resource_param.POWER_NR
+        return parameter.POWER_NR
 
     def get_water_serial(self)->str:
         """This function returns the water serial number
@@ -250,7 +250,7 @@ class ResMgr:
         Return:
             str:serial number
         """
-        return resource_param.WATER_NR
+        return parameter.WATER_NR
 
     def get_history(self)->str:
         """This function returns all data as csv string

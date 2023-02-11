@@ -49,7 +49,7 @@ def plot_overall_counters_to_json() -> str:
     Returns:
         str: json representation of a figure showing the overall counters
     """
-    data_frame = data_handler.load_data()
+    data_frame = data_handler.load_actuals_data()
     fig = plot_three_graphs_scatter(data_frame)
     return convert_figure_to_json(fig)
 
@@ -59,7 +59,7 @@ def plot_consumption_to_json() -> str:
     Returns:
         str: json representation of a figure showing consumptions
     """
-    data_frame = data_handler.load_data()
+    data_frame = data_handler.load_actuals_data()
     diff_cols = ['gas', 'power', 'water']
     data_frame[diff_cols] = data_frame[diff_cols].diff()
     fig = plot_three_graphs_bar(data_frame)
@@ -116,7 +116,7 @@ def plot_three_graphs_bar(data_frame:pd.DataFrame) -> go.Figure:
 def direct_plot_consumption():
     """This function directly plot the consumption
     """
-    data_frame = data_handler.load_data()
+    data_frame = data_handler.load_actuals_data()
     fig = plot_three_graphs_scatter(data_frame)
     fig.show()
 
