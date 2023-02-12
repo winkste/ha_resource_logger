@@ -1,12 +1,5 @@
 """ This module handles the plotting of diagrams
 
-This script will:
-- handle the monitored resources
-- allows to read out the last values
-- stores new values in RAM
-- checks if data has been changed and gives a feedback
-- supports storing the data
-
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software
 Foundation, either version 3 of the License, or (at your option) any later
@@ -50,7 +43,8 @@ def plot_overall_counters_to_json() -> str:
         str: json representation of a figure showing the overall counters
     """
     data_frame = data_handler.load_actuals_data()
-    fig = plot_three_graphs_scatter(data_frame)
+    col_set = [["date", "Datum"], ["gas", "Gas"], ["power", "Strom"], ["water", "Wasser"]]
+    fig = plot_x_graphs_scatter(data_frame, col_set)
     return convert_figure_to_json(fig)
 
 def plot_consumption_to_json() -> str:
@@ -62,62 +56,103 @@ def plot_consumption_to_json() -> str:
     data_frame = data_handler.load_actuals_data()
     diff_cols = ['gas', 'power', 'water']
     data_frame[diff_cols] = data_frame[diff_cols].diff()
-    fig = plot_three_graphs_bar(data_frame)
+    col_set = [["date", "Datum"], ["gas", "Gas"], ["power", "Strom"], ["water", "Wasser"]]
+    fig = plot_x_graphs_bar(data_frame, col_set)
     return convert_figure_to_json(fig)
 
-def plot_three_graphs_scatter(data_frame:pd.DataFrame) -> go.Figure:
-    """Plots the dataframe to three scatter graphs
-
-    Args:
-        data_frame (pd.DataFrame): data set for three data sets
+def plot_historical_to_json() -> str:
+    """Generates a plot of historical and return it as json format
 
     Returns:
-        go.Figure: returns a plot with three graphs
+        str: json representation of a figure showing consumptions
     """
-    fig = make_subplots(rows=1, cols=3)
-    # plot gas in column 1 means left
-    fig.add_trace(
-        go.Scatter(x=data_frame['date'].tolist(), y=data_frame['gas'].tolist(), name="GAS"),
-        row=1, col=1)
-    # plot power in column 2 means middle
-    fig.add_trace(
-        go.Scatter(x=data_frame['date'].tolist(), y=data_frame['power'].tolist(), name="POWER"),
-        row=1, col=2)
-    # plot water in column 3 means right
-    fig.add_trace(
-        go.Scatter(x=data_frame['date'].tolist(), y=data_frame['water'].tolist(), name="WATER"),
-        row=1, col=3)
+    data_frame = data_handler.load_historical_data()
+    col_set = [["year", "Jahr"], ["gas", "Gas"], ["power", "Strom"], ["water", "Wasser"]]
+    fig = plot_x_graphs_vertical_bar(data_frame, col_set)
+    return convert_figure_to_json(fig)
+
+def plot_x_graphs_scatter(data_frame:pd.DataFrame, df_cols:list) -> go.Figure:
+    """Plots the dataframe to x graph plots
+
+    Args:
+        data_frame (pd.DataFrame): data frame
+        df_cols (list): list to identify columns in data frame
+
+    Returns:
+        go.Figure: three graph bar
+    """
+    if data_frame.shape[1] < len(df_cols):
+        raise ValueError("Data frame doesn't have enough columns")
+    if len(df_cols) < 2:
+        raise ValueError("Column list doesn't have at least two columns")
+    
+    graph_columns = len(df_cols) - 1 # includes y axis at 0
+    fig = make_subplots(rows=1, cols=graph_columns)
+
+
+    for i in range(1,len(df_cols)):
+        fig.add_trace(
+            go.Scatter(x=data_frame[df_cols[0][0]].tolist(), y=data_frame[df_cols[i][0]].tolist(), name=df_cols[i][1]),
+            row=1, col=i)
+
     return fig
 
-def plot_three_graphs_bar(data_frame:pd.DataFrame) -> go.Figure:
-    """Plots the dataframe to three block graphs
+def plot_x_graphs_bar(data_frame:pd.DataFrame, df_cols:list) -> go.Figure:
+    """Plots the dataframe to x graph plots
 
     Args:
-        data_frame (pd.DataFrame): data set for three data sets
+        data_frame (pd.DataFrame): data frame
+        df_cols (list): list to identify columns in data frame
 
     Returns:
-        go.Figure: returns a plot with three graphs
+        go.Figure: three graph bar
     """
-    fig = make_subplots(rows=1, cols=3)
-        # plot gas in column 1 means left
-    fig.add_trace(
-        go.Bar(x=data_frame['date'].tolist(), y=data_frame['gas'].tolist(), name="GAS"),
-        row=1, col=1)
-    # plot power in column 2 means middle
-    fig.add_trace(
-        go.Bar(x=data_frame['date'].tolist(), y=data_frame['power'].tolist(), name="POWER"),
-        row=1, col=2)
-    # plot water in column 3 means right
-    fig.add_trace(
-        go.Bar(x=data_frame['date'].tolist(), y=data_frame['water'].tolist(), name="WATER"),
-        row=1, col=3)
+    if data_frame.shape[1] < len(df_cols):
+        raise ValueError("Data frame doesn't have enough columns")
+    if len(df_cols) < 2:
+        raise ValueError("Column list doesn't have at least two columns")
+    
+    graph_columns = len(df_cols) - 1 # includes y axis at 0
+    fig = make_subplots(rows=1, cols=graph_columns)
+
+    for i in range(1,len(df_cols)):
+        fig.add_trace(
+            go.Bar(x=data_frame[df_cols[0][0]].tolist(), y=data_frame[df_cols[i][0]].tolist(), name=df_cols[i][1]),
+            row=1, col=i)
+
+    return fig
+
+def plot_x_graphs_vertical_bar(data_frame:pd.DataFrame, df_cols:list) -> go.Figure:
+    """Plots the dataframe to x graph plots vertical
+
+    Args:
+        data_frame (pd.DataFrame): data frame
+        df_cols (list): list to identify columns in data frame
+
+    Returns:
+        go.Figure: three graph bar
+    """
+    if data_frame.shape[1] < len(df_cols):
+        raise ValueError("Data frame doesn't have enough columns")
+    if len(df_cols) < 2:
+        raise ValueError("Column list doesn't have at least two columns")
+    
+    graph_columns = len(df_cols) - 1 # includes y axis at 0
+    fig = make_subplots(rows=graph_columns, cols=1)
+
+    for i in range(1, len(df_cols)):
+        fig.add_trace(
+            go.Bar(x=data_frame[df_cols[0][0]].tolist(), y=data_frame[df_cols[i][0]].tolist(), name=df_cols[i][1]),
+            row=i, col=1)
+
     return fig
 
 def direct_plot_consumption():
     """This function directly plot the consumption
     """
     data_frame = data_handler.load_actuals_data()
-    fig = plot_three_graphs_scatter(data_frame)
+    col_set = [["date", "Datum"], ["gas", "Gas"], ["power", "Strom"], ["water", "Wasser"]]
+    fig = plot_x_graphs_scatter(data_frame, col_set)
     fig.show()
 
 def convert_figure_to_json(figure:go.Figure) -> str:

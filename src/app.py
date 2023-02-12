@@ -61,8 +61,9 @@ logo = img(src='./static/img/logo.png', height="50", width="50", style="margin-t
 topbar = Navbar(logo,
                 View('Login', 'get_login'),
                 View('Zählerstände', 'get_power'),
-                View('Historie', 'get_hist'),
-                View('Analysis', 'get_analysis'),
+                View('Daten', 'get_datasets'),
+                View('Actuals', 'get_actuals'),
+                View('Historie', 'get_historical'),
                 View('Logout', 'get_logout')
                 )
 
@@ -149,8 +150,8 @@ def get_power():
         return redirect(url_for("get_login"))
 
 
-@app.route("/hist", methods = ["GET"])
-def get_hist():
+@app.route("/data", methods = ["GET"])
+def get_datasets():
     """
     Generates the history log page for flask
 
@@ -161,13 +162,13 @@ def get_hist():
     if "user" in session:
         res_mgr = ResMgr()
         res_str = res_mgr.get_history()
-        return render_template("history.html", res_data=res_str)
+        return render_template("datasets.html", res_data=res_str)
     else:
         flash("You are not logged in", "info")
         return redirect(url_for("get_login"))
 
-@app.route("/anal", methods = ["GET"])
-def get_analysis():
+@app.route("/act", methods = ["GET"])
+def get_actuals():
     """
     Generates the analysis page for flask
 
@@ -178,9 +179,25 @@ def get_analysis():
     if "user" in session:
         graph_json_count = plotter.plot_overall_counters_to_json()
         graph_json_consum = plotter.plot_consumption_to_json()
-        return render_template('analysis.html',
+        return render_template('actuals.html',
                                 graphJSON1=graph_json_count,
                                 graphJSON2=graph_json_consum)
+    else:
+        flash("You are not logged in", "info")
+        return redirect(url_for("get_login"))
+
+@app.route("/hist", methods = ["GET"])
+def get_historical():
+    """
+    Generates the historical page for flask
+
+    Return
+    --------
+    obj : returns a page that is displayed in the browser
+    """
+    if "user" in session:
+        graph_json_hist = plotter.plot_historical_to_json()
+        return render_template('history.html', graphJSON1=graph_json_hist)
     else:
         flash("You are not logged in", "info")
         return redirect(url_for("get_login"))

@@ -40,9 +40,9 @@ WATER_LAST_YEAR:int = 45
 DATA_FOLDER_PATH:str = "./bin/"
 
 # used to run on the mac
-PORT_NUMBER:int = 5050
+#PORT_NUMBER:int = 5050
 # used to build the docker container for synology
-#PORT_NUMBER:int = 5000
+PORT_NUMBER:int = 5000
 
 
 

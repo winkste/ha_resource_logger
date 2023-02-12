@@ -32,6 +32,7 @@ import parameter
 ################################################################################
 # Variables
 actuals_file_name:str = parameter.DATA_FOLDER_PATH + "actuals.csv"
+hist_file_name:str = parameter.DATA_FOLDER_PATH + "history.csv"
 
 ################################################################################
 # Functions
@@ -51,6 +52,14 @@ def store_actuals_data(data_frame:pd.DataFrame)->None:
         data_frame (pd.DataFrame): dataframe to be stored
     """
     data_frame.to_csv(actuals_file_name, index=False)
+
+def load_historical_data()->pd.DataFrame:
+    """Load the historical data to dataframe
+
+    Returns:
+        pd.dataFrame: Data frame 
+    """
+    return pd.read_csv(hist_file_name)
 
 ################################################################################
 # Classes
