@@ -40,7 +40,7 @@ import collections.abc
 import collections
 from datetime import timedelta
 collections.MutableMapping = collections.abc.MutableMapping
-from flask import Flask, redirect, url_for, render_template, request, session, flash
+from flask import Flask, redirect, url_for, render_template, request, session, flash, jsonify
 from flask_bootstrap import Bootstrap
 from flask_nav import Nav
 from flask_nav.elements import Navbar, View
@@ -49,7 +49,7 @@ from dominate.tags import img
 import mqtt_secrets
 import mqtt_ctrl
 #from energy_log import EnergyLog
-from resource_mgr import ResMgr
+from storage_handler import store_actuals_from_list, load_actuals_to_string, load_historical_to_string, store_history_from_list
 import plotter
 import parameter
 
@@ -60,9 +60,8 @@ port_number:int = parameter.PORT_NUMBER
 logo = img(src='./static/img/logo.png', height="50", width="50", style="margin-top:-15px")
 topbar = Navbar(logo,
                 View('Login', 'get_login'),
-                View('Zählerstände', 'get_power'),
-                View('Daten', 'get_datasets'),
-                View('Actuals', 'get_actuals'),
+                View('Zählerstände', 'get_new_data_entry_page'),
+                View('Verbräuche', 'get_new_history_entry_page'),
                 View('Historie', 'get_historical'),
                 View('Logout', 'get_logout')
                 )
@@ -74,9 +73,11 @@ nav.register_element('top', topbar)
 app = Flask(__name__)
 app.secret_key = "hello"
 app.permanent_session_lifetime = timedelta(minutes=5)
+
 Bootstrap(app)
 
 nav.init_app(app)
+
 
 ################################################################################
 # Functions
@@ -97,27 +98,43 @@ def get_login():
                 session["user"] = user
                 session.permanent = True
                 flash(f"{user} sucessful logged in.", "info")
-                return redirect(url_for("get_power"))
+                return redirect(url_for("get_new_data_entry_page"))
             else:
                 flash(f"wrong password for user: {user}", "info")
                 return redirect(url_for("get_login"))
         else:
             flash(f"unknown user: {user}", "info")
             return redirect(url_for("get_login"))
-
     else:
         if "user" in session:
             user = session["user"]
             flash(f"{user} already logged in", "info")
-            return redirect(url_for("get_power"))
-
+            return redirect(url_for("get_new_data_entry_page"))
     return render_template("login.html")
 
 
-@app.route("/power", methods = ["POST", "GET"])
-def get_power():
+@app.route("/logout")
+def get_logout():
     """
-    Generates the resource entry page for flask
+    Generates the logout page for flask
+    
+    Return
+    --------
+    obj : returns a page that is displayed in the browser
+    """
+    if "user" in session:
+        user = session["user"]
+        flash(f"{user} have been logged out.", "info")
+        session.pop("user", None)
+    else:
+        flash("You are not privisously logged in.")
+    return redirect(url_for("get_login"))
+
+
+@app.route('/newyear', methods = ["GET", "POST"])
+def get_new_data_entry_page():
+    """
+    Generates the new data entry page
 
     Return
     --------
@@ -125,66 +142,42 @@ def get_power():
     """
     if "user" in session:
         if request.method == "POST":
-            res_mgr = ResMgr()
-            new_value = int(request.form["gas"])
-            res_mgr.set_new_gas(new_value)
-            new_value = int(request.form["ele"])
-            res_mgr.set_new_power(new_value)
-            new_value = int(request.form["water"])
-            res_mgr.set_new_water(new_value)
-            res_mgr.save_new_data()
-            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/gas",
-                                    int(res_mgr.get_gas_year_consum()))
-            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/power",
-                                    int(res_mgr.get_power_year_consum()))
-            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/water",
-                                    int(res_mgr.get_water_year_consum()))
-            mqtt_ctrl.publish_data("std/dev301/s/ener_wat/date",
-                                    res_mgr.get_last_date())
+            # get the data from the page
+            data_set = request.get_json()
+            new_data = data_set['values']
+            # store the data
+            store_actuals_from_list(new_data)
+            #TODO: publish data via mqtt
             flash("data successfully stored and published")
-            return redirect(url_for("get_analysis"))
-        else:
-            return render_template("power.html")
-    else:
-        flash("You are not logged in", "info")
-        return redirect(url_for("get_login"))
+            return jsonify({'message': 'Values updated successfully'})
+        return render_template('new_data.html')
+    flash("You are not logged in", "info")
+    return redirect(url_for("get_login"))
 
 
-@app.route("/data", methods = ["GET"])
-def get_datasets():
+@app.route('/newhist', methods = ["GET", "POST"])
+def get_new_history_entry_page():
     """
-    Generates the history log page for flask
+    Generates the new history entry page
 
     Return
     --------
     obj : returns a page that is displayed in the browser
     """
     if "user" in session:
-        res_mgr = ResMgr()
-        res_str = res_mgr.get_history()
-        return render_template("datasets.html", res_data=res_str)
-    else:
-        flash("You are not logged in", "info")
-        return redirect(url_for("get_login"))
+        if request.method == "POST":
+            # get the data from the page
+            data_set = request.get_json()
+            new_data = data_set['values']
+            # store the data
+            store_history_from_list(new_data)
+            #TODO: publish data via mqtt
+            flash("data successfully stored and published")
+            return jsonify({'message': 'Values updated successfully'})
+        return render_template('new_history.html')
+    flash("You are not logged in", "info")
+    return redirect(url_for("get_login"))
 
-@app.route("/act", methods = ["GET"])
-def get_actuals():
-    """
-    Generates the analysis page for flask
-
-    Return
-    --------
-    obj : returns a page that is displayed in the browser
-    """
-    if "user" in session:
-        graph_json_count = plotter.plot_overall_counters_to_json()
-        graph_json_consum = plotter.plot_consumption_to_json()
-        return render_template('actuals.html',
-                                graphJSON1=graph_json_count,
-                                graphJSON2=graph_json_consum)
-    else:
-        flash("You are not logged in", "info")
-        return redirect(url_for("get_login"))
 
 @app.route("/hist", methods = ["GET"])
 def get_historical():
@@ -203,21 +196,33 @@ def get_historical():
         return redirect(url_for("get_login"))
 
 
-@app.route("/logout")
-def get_logout():
+@app.route('/api/hist')
+def get_history_api():
     """
-    Generates the logout page for flask
+    Get the history API
     
     Return
     --------
-    obj : returns a page that is displayed in the browser
+    obj : returns a string of data or redirects to the login display
     """
     if "user" in session:
-        user = session["user"]
-        flash(f"{user} have been logged out.", "info")
-        session.pop("user", None)
-    else:
-        flash("You are not privisously logged in.")
+        return load_historical_to_string()
+    flash("You are not logged in", "info")
+    return redirect(url_for("get_login"))
+
+
+@app.route('/api/actuals')
+def data_func():
+    """
+    Get the actuals API
+    
+    Return
+    --------
+    obj : returns a string of data or redirects to the login display
+    """
+    if "user" in session:
+        return load_actuals_to_string()
+    flash("You are not logged in", "info")
     return redirect(url_for("get_login"))
 
 ################################################################################
