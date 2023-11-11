@@ -49,7 +49,9 @@ from dominate.tags import img
 import mqtt_secrets
 import mqtt_ctrl
 #from energy_log import EnergyLog
-from storage_handler import store_actuals_from_list, load_actuals_to_string, load_historical_to_string, store_history_from_list
+from storage_handler import store_actuals_from_list, load_actuals_to_string
+from storage_handler import load_historical_to_string, store_history_from_list
+from storage_handler import get_last_actual_to_list, get_last_history_to_list
 import plotter
 import parameter
 
@@ -150,7 +152,7 @@ def get_new_data_entry_page():
             #TODO: publish data via mqtt
             flash("data successfully stored and published")
             return jsonify({'message': 'Values updated successfully'})
-        return render_template('new_data.html')
+        return render_template('new_data.html', initial_data=get_last_actual_to_list())
     flash("You are not logged in", "info")
     return redirect(url_for("get_login"))
 
@@ -174,7 +176,7 @@ def get_new_history_entry_page():
             #TODO: publish data via mqtt
             flash("data successfully stored and published")
             return jsonify({'message': 'Values updated successfully'})
-        return render_template('new_history.html')
+        return render_template('new_history.html', initial_data=get_last_history_to_list())
     flash("You are not logged in", "info")
     return redirect(url_for("get_login"))
 

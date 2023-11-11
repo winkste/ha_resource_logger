@@ -97,6 +97,7 @@ def store_history_from_list(input_data:list)->None:
     new_row = pd.DataFrame([new_data_set], columns=column_names, index=[new_data_index])
     # concatenate the two data frames to one
     data_frame = pd.concat([data_frame, pd.DataFrame(new_row)], ignore_index=False)
+    data_frame.index = data_frame.index.astype(int)
     data_frame.sort_index()
     # store the update dataframe back to file
     data_frame.to_csv(hist_file_name, index="year", index_label="year")
@@ -139,6 +140,31 @@ def load_actuals_to_string()->str:
     """
     data_frame = pd.read_csv(actuals_file_name, index_col='date', parse_dates=['date'])
     return data_frame.to_csv().strip('\n').split('\n')
+
+def get_last_actual_to_list()->list:
+    """Returns the last data set from the actuals set.
+
+    Returns:
+        list: row entry of actuals set as list
+    """
+    # read data to data frame
+    data_frame = pd.read_csv(actuals_file_name)
+    # return the latest data row as list (expected data is sorted)
+    return data_frame.iloc[-1].tolist()
+
+def get_last_history_to_list()->list:
+    """Returns the last data set from the history set.
+
+    Returns:
+        list: row entry of history set as list
+    """
+    # load data into data frame with index on column year
+    data_frame = pd.read_csv(hist_file_name, index_col='year')
+    # convert latest data set to list, note: toList here returns a list of lists
+    list_data = data_frame.tail(1).values.tolist()[0]
+    # add the index as a first item into the list
+    list_data.insert(0, data_frame.tail(1).index.item())
+    return list_data
 
 ################################################################################
 # Classes

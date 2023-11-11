@@ -18,11 +18,9 @@
             </thead>
             <tbody id="table-body">
                 <tr>
-                    <td contenteditable="true">2023</td>
-                    <td contenteditable="true">0.0</td>
-                    <td contenteditable="true">0.0</td>
-                    <td contenteditable="true">0.0</td>
-                    <td contenteditable="true">0.0</td>
+                    {% for cell in initial_data %}
+                        <td contenteditable="true">{{ cell }}</td>
+                    {% endfor %}
                 </tr>
             </tbody>
         </table>
