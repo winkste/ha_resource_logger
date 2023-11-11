@@ -52,6 +52,8 @@ import mqtt_ctrl
 from storage_handler import store_actuals_from_list, load_actuals_to_string
 from storage_handler import load_historical_to_string, store_history_from_list
 from storage_handler import get_last_actual_to_list, get_last_history_to_list
+from storage_handler import get_actuals_column_names, get_history_column_names
+from storage_handler import get_actuals_as_list, get_history_as_list
 import plotter
 import parameter
 
@@ -65,6 +67,8 @@ topbar = Navbar(logo,
                 View('Zählerstände', 'get_new_data_entry_page'),
                 View('Verbräuche', 'get_new_history_entry_page'),
                 View('Historie', 'get_historical'),
+                View('Actuals Tab', 'get_actuals_view'),
+                View('Hist Tab', 'get_historical_view'),
                 View('Logout', 'get_logout')
                 )
 
@@ -152,7 +156,8 @@ def get_new_data_entry_page():
             #TODO: publish data via mqtt
             flash("data successfully stored and published")
             return jsonify({'message': 'Values updated successfully'})
-        return render_template('new_data.html', initial_data=get_last_actual_to_list())
+        return render_template('new_data.html', jumpPage='/newyear', page_name="Zählerstände", 
+                               ccolumn_names=get_actuals_column_names(), initial_data=get_last_actual_to_list())
     flash("You are not logged in", "info")
     return redirect(url_for("get_login"))
 
@@ -176,7 +181,8 @@ def get_new_history_entry_page():
             #TODO: publish data via mqtt
             flash("data successfully stored and published")
             return jsonify({'message': 'Values updated successfully'})
-        return render_template('new_history.html', initial_data=get_last_history_to_list())
+        return render_template('new_data.html', jumpPage='/newyear', page_name="Verbräuche",
+                               ccolumn_names=get_history_column_names(), initial_data=get_last_history_to_list())
     flash("You are not logged in", "info")
     return redirect(url_for("get_login"))
 
@@ -196,6 +202,40 @@ def get_historical():
     else:
         flash("You are not logged in", "info")
         return redirect(url_for("get_login"))
+
+@app.route("/viewhist", methods = ["GET"])
+def get_actuals_view():
+    """
+    Generates the historical page for flask
+
+    Return
+    --------
+    obj : returns a page that is displayed in the browser
+    """
+    if "user" in session:
+        return render_template('view_history.html', page_name="Verbräuche",
+                               ccolumn_names=get_history_column_names(),
+                               initial_data=get_history_as_list())
+
+    flash("You are not logged in", "info")
+    return redirect(url_for("get_login"))
+
+@app.route("/viewactuals", methods = ["GET"])
+def get_historical_view():
+    """
+    Generates the actuals page for flask
+
+    Return
+    --------
+    obj : returns a page that is displayed in the browser
+    """
+    if "user" in session:
+        return render_template('view_history.html', page_name="Zählerstände",
+                               ccolumn_names=get_actuals_column_names(),
+                               initial_data=get_actuals_as_list())
+
+    flash("You are not logged in", "info")
+    return redirect(url_for("get_login"))
 
 
 @app.route('/api/hist')

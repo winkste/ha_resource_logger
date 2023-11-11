@@ -61,7 +61,7 @@ def store_actuals_from_list(input_data:list)->None:
         input_data (list): list of strings
     """
     # load the all data from the csv data set file
-    data_frame = pd.read_csv(actuals_file_name, index_col='date', parse_dates=['date'])
+    data_frame = pd.read_csv(actuals_file_name, index_col='Date', parse_dates=['Date'])
 
     # prepare the new data set to be integrated into the data frame
     # get the column names from the existing data frame as list
@@ -75,8 +75,8 @@ def store_actuals_from_list(input_data:list)->None:
     # concatenate the two data frames to one
     data_frame = pd.concat([data_frame, pd.DataFrame(new_row)], ignore_index=False)
     # store the update dataframe back to file
-    data_frame.to_csv(actuals_file_name, index="date", index_label="date")
-    remove_duplicates_from_data_file(actuals_file_name, 'date')
+    data_frame.to_csv(actuals_file_name, index="Date", index_label="Date")
+    remove_duplicates_from_data_file(actuals_file_name, 'Date')
 
 def store_history_from_list(input_data:list)->None:
     """Stores a new set of history
@@ -85,7 +85,7 @@ def store_history_from_list(input_data:list)->None:
         input_data (list): list of strings
     """
     # load the all data from the csv data set file
-    data_frame = pd.read_csv(hist_file_name, index_col='year')
+    data_frame = pd.read_csv(hist_file_name, index_col='Year')
     # prepare the new data set to be integrated into the data frame
     # get the column names from the existing data frame as list
     column_names = data_frame.columns.values.tolist()
@@ -100,9 +100,9 @@ def store_history_from_list(input_data:list)->None:
     data_frame.index = data_frame.index.astype(int)
     data_frame.sort_index()
     # store the update dataframe back to file
-    data_frame.to_csv(hist_file_name, index="year", index_label="year")
+    data_frame.to_csv(hist_file_name, index="Year", index_label="Year")
     # clean the data set from duplicates
-    remove_duplicates_from_data_file(hist_file_name, 'year')
+    remove_duplicates_from_data_file(hist_file_name, 'Year')
 
 def remove_duplicates_from_data_file(file_name:str, column:str)->None:
     """This function removes all duplicates and leaves the latest.
@@ -117,7 +117,6 @@ def remove_duplicates_from_data_file(file_name:str, column:str)->None:
 
 def load_historical_data()->pd.DataFrame:
     """Load the historical data to dataframe
-
     Returns:
         pd.dataFrame: Data frame 
     """
@@ -125,25 +124,22 @@ def load_historical_data()->pd.DataFrame:
 
 def load_historical_to_string()->str:
     """Load the historical data to a string
-
     Returns:
         str: historical data
     """
-    data_frame = pd.read_csv(hist_file_name, index_col="year")
+    data_frame = pd.read_csv(hist_file_name, index_col="Year")
     return data_frame.to_csv().strip('\n').split('\n')
 
 def load_actuals_to_string()->str:
     """Loads the actuals dataset from file and returns it as CSV - string
-
     Returns:
         str: comma separated string replacement of actuals dataset
     """
-    data_frame = pd.read_csv(actuals_file_name, index_col='date', parse_dates=['date'])
+    data_frame = pd.read_csv(actuals_file_name, index_col='Date', parse_dates=['Date'])
     return data_frame.to_csv().strip('\n').split('\n')
 
 def get_last_actual_to_list()->list:
     """Returns the last data set from the actuals set.
-
     Returns:
         list: row entry of actuals set as list
     """
@@ -154,18 +150,52 @@ def get_last_actual_to_list()->list:
 
 def get_last_history_to_list()->list:
     """Returns the last data set from the history set.
-
     Returns:
         list: row entry of history set as list
     """
     # load data into data frame with index on column year
-    data_frame = pd.read_csv(hist_file_name, index_col='year')
+    data_frame = pd.read_csv(hist_file_name, index_col='Year')
     # convert latest data set to list, note: toList here returns a list of lists
     list_data = data_frame.tail(1).values.tolist()[0]
     # add the index as a first item into the list
     list_data.insert(0, data_frame.tail(1).index.item())
     return list_data
 
+def get_actuals_column_names()->list:
+    """returns the column names of the actuals data frame
+    Returns:
+        list: list of strings
+    """
+    data_frame = pd.read_csv(actuals_file_name)
+    column_names = data_frame.columns.values.tolist()
+    return column_names
+
+def get_history_column_names()->list:
+    """returns the column names of the history data frame
+    Returns:
+        list: list of strings
+    """
+    data_frame = pd.read_csv(hist_file_name)
+    column_names = data_frame.columns.values.tolist()
+    return column_names
+
+def get_actuals_as_list()->list:
+    """returns the actuals data as list
+    Returns:
+        list: list of actuals data
+    """
+    data_frame = pd.read_csv(actuals_file_name)
+    list_of_data = data_frame.values.tolist()
+    return list_of_data
+
+def get_history_as_list()->list:
+    """returns the history data as list
+    Returns:
+        list: list of history data
+    """
+    data_frame = pd.read_csv(hist_file_name)
+    list_of_data = data_frame.values.tolist()
+    return list_of_data
 ################################################################################
 # Classes
 

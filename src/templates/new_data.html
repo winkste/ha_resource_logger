@@ -1,25 +1,16 @@
 {% extends "base.html" %}
 
-{% block title %}
-    Data Entry
-{% endblock %}
-
 {% block content2 %}
     <body>
+        {% block title %}
+        {{ page_name }}
+        {% endblock %}
         <table border="1">
             <thead>
                 <tr>
-                    <th>Date</th>
-                    <th>Gas</th>
-                    <th>Water</th>
-                    <th>Power In</th>
-                    <th>Power Out</th>
-                    <th>Power Gen</th>
-                    <th>Power PV used</th>
-                    <th>Power used</th>
-                    <th>Power Car Stephan</th>
-                    <th>Power Car Heike</th>
-                    <th>Power Car Wink</th>
+                    {% for cell in ccolumn_names %}
+                        <th> {{ cell }}</th>
+                    {% endfor %}
                 </tr>
             </thead>
             <tbody id="table-body">
@@ -36,7 +27,7 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 var applyButton = document.getElementById('apply-button');
-
+                var jumpPage = "{{ jump_page }}";
                 applyButton.addEventListener('click', function() {
                     var cells = document.querySelectorAll('td[contenteditable="true"]');
                     var values = [];
@@ -45,13 +36,13 @@
                     });
 
                     var xhr = new XMLHttpRequest();
-                    xhr.open('POST', '/newyear', true);
+                    xhr.open('POST', jumpPage, true);
                     xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
 
                     xhr.onload = function() {
                         if (xhr.status >= 200 && xhr.status < 400) {
                             console.log('Values updated successfully');
-                            window.location.href = '/newyear'; // Reload the actuals page
+                            window.location.href = jumpPage; // Reload the actuals page
                         } else {
                             console.error('Error updating values');
                         }

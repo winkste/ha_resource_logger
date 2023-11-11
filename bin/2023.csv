@@ -1,4 +1,4 @@
-date,gas,water,power_in,power_out,power_gen,power_pv_used,power_used,car_stephan,car_heike,car_wink
+Date,Gas,Water,Power In,Power Out,Power Gen,Power PV used,Power used,Power Car Stephan,Power Car Heike,Power Car Wink
 2023-01-01,4110.0,45.0,54775.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
 2023-01-16,4112.0,46.0,54776.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0
 2023-01-17,4115.0,47.0,54780.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0

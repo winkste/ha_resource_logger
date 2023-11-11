@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content2 %}
+    <body>
+        {% block title %}
+        {{ page_name }}
+        {% endblock %}
+        <table border="1">
+            <thead>
+                <tr>
+                    {% for cell in ccolumn_names %}
+                        <th> {{ cell }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                {% for row in initial_data %}
+                    <tr>
+                        {% for cell in row %}
+                            <td>{{ cell }}</td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </body>
+{% endblock %}

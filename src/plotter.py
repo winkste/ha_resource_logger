@@ -65,8 +65,8 @@ def plot_historical_to_json() -> str:
         str: json representation of a figure showing consumptions
     """
     data_frame = storage_handler.load_historical_data()
-    col_set = [["year", "Jahr"], ["gas", "Gas"], ["power in", "Strombezug"],
-               ["power out", "Stromeinspeisung"], ["water", "Wasser"]]
+    col_set = [["Year", "Jahr"], ["Gas", "Gas"], ["Power In", "Strombezug"],
+               ["Power Out", "Stromeinspeisung"], ["Water", "Wasser"]]
     fig = plot_x_graphs_vertical_bar(data_frame, col_set)
     return convert_figure_to_json(fig)
 
