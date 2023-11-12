@@ -53,7 +53,7 @@ from storage_handler import store_actuals_from_list, load_actuals_to_string
 from storage_handler import load_historical_to_string, store_history_from_list
 from storage_handler import get_last_actual_to_list, get_last_history_to_list
 from storage_handler import get_actuals_column_names, get_history_column_names
-from storage_handler import get_actuals_as_list, get_history_as_list
+from storage_handler import get_actuals_as_list, get_history_as_list, get_statistics
 import plotter
 import parameter
 
@@ -64,11 +64,12 @@ port_number:int = parameter.PORT_NUMBER
 logo = img(src='./static/img/logo.png', height="50", width="50", style="margin-top:-15px")
 topbar = Navbar(logo,
                 View('Login', 'get_login'),
-                View('Zählerstände', 'get_new_data_entry_page'),
-                View('Verbräuche', 'get_new_history_entry_page'),
-                View('Historie', 'get_historical'),
-                View('Actuals Tab', 'get_actuals_view'),
-                View('Hist Tab', 'get_historical_view'),
+                View('Eingabe Zählerstände', 'get_new_data_entry_page'),
+                View('Eingabe Jahresverbräuche', 'get_new_history_entry_page'),
+                View('Ansicht Jahresverbräuche', 'get_historical'),
+                View('Tabelle Zähler', 'get_actuals_view'),
+                View('Tabelle Jahresverbräuche', 'get_historical_view'),
+                View('Statistiken', 'get_statistics_view'),
                 View('Logout', 'get_logout')
                 )
 
@@ -91,7 +92,6 @@ nav.init_app(app)
 def get_login():
     """
     Generates the login page for flask
-
     Return
     --------
     obj : returns a page that is displayed in the browser
@@ -123,7 +123,6 @@ def get_login():
 def get_logout():
     """
     Generates the logout page for flask
-    
     Return
     --------
     obj : returns a page that is displayed in the browser
@@ -141,7 +140,6 @@ def get_logout():
 def get_new_data_entry_page():
     """
     Generates the new data entry page
-
     Return
     --------
     obj : returns a page that is displayed in the browser
@@ -156,8 +154,9 @@ def get_new_data_entry_page():
             #TODO: publish data via mqtt
             flash("data successfully stored and published")
             return jsonify({'message': 'Values updated successfully'})
-        return render_template('new_data.html', jumpPage='/newyear', page_name="Zählerstände", 
-                               ccolumn_names=get_actuals_column_names(), initial_data=get_last_actual_to_list())
+        return render_template('new_data.html', jumpPage='/newyear', page_name="Zählerstände",
+                               ccolumn_names=get_actuals_column_names(),
+                               initial_data=get_last_actual_to_list())
     flash("You are not logged in", "info")
     return redirect(url_for("get_login"))
 
@@ -166,7 +165,6 @@ def get_new_data_entry_page():
 def get_new_history_entry_page():
     """
     Generates the new history entry page
-
     Return
     --------
     obj : returns a page that is displayed in the browser
@@ -191,7 +189,6 @@ def get_new_history_entry_page():
 def get_historical():
     """
     Generates the historical page for flask
-
     Return
     --------
     obj : returns a page that is displayed in the browser
@@ -203,11 +200,11 @@ def get_historical():
         flash("You are not logged in", "info")
         return redirect(url_for("get_login"))
 
+
 @app.route("/viewhist", methods = ["GET"])
 def get_actuals_view():
     """
     Generates the historical page for flask
-
     Return
     --------
     obj : returns a page that is displayed in the browser
@@ -220,11 +217,11 @@ def get_actuals_view():
     flash("You are not logged in", "info")
     return redirect(url_for("get_login"))
 
+
 @app.route("/viewactuals", methods = ["GET"])
 def get_historical_view():
     """
     Generates the actuals page for flask
-
     Return
     --------
     obj : returns a page that is displayed in the browser
@@ -233,7 +230,23 @@ def get_historical_view():
         return render_template('view_history.html', page_name="Zählerstände",
                                ccolumn_names=get_actuals_column_names(),
                                initial_data=get_actuals_as_list())
+    flash("You are not logged in", "info")
+    return redirect(url_for("get_login"))
 
+
+@app.route("/viewstats", methods = ["GET"])
+def get_statistics_view():
+    """
+    Generates the statistics page for flask
+    Return
+    --------
+    obj : returns a page that is displayed in the browser
+    """
+    if "user" in session:
+        stats_data = get_statistics()
+        # Zipping the data before passing it to the template
+        zipped_data = zip(list(stats_data.keys()), list(stats_data.values()))
+        return render_template('view_stats.html', page_name="Statistiken", stats_data=zipped_data)
     flash("You are not logged in", "info")
     return redirect(url_for("get_login"))
 
@@ -242,7 +255,6 @@ def get_historical_view():
 def get_history_api():
     """
     Get the history API
-    
     Return
     --------
     obj : returns a string of data or redirects to the login display
@@ -257,7 +269,6 @@ def get_history_api():
 def data_func():
     """
     Get the actuals API
-    
     Return
     --------
     obj : returns a string of data or redirects to the login display
@@ -274,4 +285,3 @@ def data_func():
 # Scripts
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=port_number)
-

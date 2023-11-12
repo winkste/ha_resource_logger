@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content2 %}
+    <body>
+        {% block title %}
+        {{ page_name }}
+        {% endblock %}
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>Beschreibung</th>
+                    <th>Wert</th>
+                </tr>
+            </thead>
+            <tbody id="table-body">
+                {% for header, data in stats_data %}
+                    <tr>
+                        <td>{{ header }}</td>
+                        <td>{{ data }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </body>
+{% endblock %}

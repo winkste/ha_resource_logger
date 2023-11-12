@@ -26,9 +26,9 @@ __version__ = "0.0.1"
 
 ################################################################################
 # Imports
+#from json import loads, dumps
 import pandas as pd
 import parameter
-from json import loads, dumps
 
 ################################################################################
 # Variables
@@ -40,29 +40,27 @@ hist_file_name:str = parameter.DATA_FOLDER_PATH + "history.csv"
 
 def load_actuals_data()->pd.DataFrame:
     """Load the actuals data to dataframe
-
     Returns:
         pd.dataFrame: Data frame 
     """
     return pd.read_csv(actuals_file_name)
 
+
 def store_actuals_data(data_frame:pd.DataFrame)->None:
     """Capsulates the actuals data storage
-
     Args:
         data_frame (pd.DataFrame): dataframe to be stored
     """
     data_frame.to_csv(actuals_file_name, index=False)
 
+
 def store_actuals_from_list(input_data:list)->None:
     """Stores a new set of data
-
     Args:
         input_data (list): list of strings
     """
     # load the all data from the csv data set file
     data_frame = pd.read_csv(actuals_file_name, index_col='Date', parse_dates=['Date'])
-
     # prepare the new data set to be integrated into the data frame
     # get the column names from the existing data frame as list
     column_names = data_frame.columns.values.tolist()
@@ -78,9 +76,9 @@ def store_actuals_from_list(input_data:list)->None:
     data_frame.to_csv(actuals_file_name, index="Date", index_label="Date")
     remove_duplicates_from_data_file(actuals_file_name, 'Date')
 
+
 def store_history_from_list(input_data:list)->None:
     """Stores a new set of history
-
     Args:
         input_data (list): list of strings
     """
@@ -104,6 +102,7 @@ def store_history_from_list(input_data:list)->None:
     # clean the data set from duplicates
     remove_duplicates_from_data_file(hist_file_name, 'Year')
 
+
 def remove_duplicates_from_data_file(file_name:str, column:str)->None:
     """This function removes all duplicates and leaves the latest.
     Args:
@@ -115,12 +114,14 @@ def remove_duplicates_from_data_file(file_name:str, column:str)->None:
     clean_data = clean_data.set_index(column)
     clean_data.to_csv(file_name)
 
+
 def load_historical_data()->pd.DataFrame:
     """Load the historical data to dataframe
     Returns:
         pd.dataFrame: Data frame 
     """
     return pd.read_csv(hist_file_name)
+
 
 def load_historical_to_string()->str:
     """Load the historical data to a string
@@ -130,6 +131,7 @@ def load_historical_to_string()->str:
     data_frame = pd.read_csv(hist_file_name, index_col="Year")
     return data_frame.to_csv().strip('\n').split('\n')
 
+
 def load_actuals_to_string()->str:
     """Loads the actuals dataset from file and returns it as CSV - string
     Returns:
@@ -137,6 +139,7 @@ def load_actuals_to_string()->str:
     """
     data_frame = pd.read_csv(actuals_file_name, index_col='Date', parse_dates=['Date'])
     return data_frame.to_csv().strip('\n').split('\n')
+
 
 def get_last_actual_to_list()->list:
     """Returns the last data set from the actuals set.
@@ -147,6 +150,7 @@ def get_last_actual_to_list()->list:
     data_frame = pd.read_csv(actuals_file_name)
     # return the latest data row as list (expected data is sorted)
     return data_frame.iloc[-1].tolist()
+
 
 def get_last_history_to_list()->list:
     """Returns the last data set from the history set.
@@ -161,6 +165,7 @@ def get_last_history_to_list()->list:
     list_data.insert(0, data_frame.tail(1).index.item())
     return list_data
 
+
 def get_actuals_column_names()->list:
     """returns the column names of the actuals data frame
     Returns:
@@ -169,6 +174,7 @@ def get_actuals_column_names()->list:
     data_frame = pd.read_csv(actuals_file_name)
     column_names = data_frame.columns.values.tolist()
     return column_names
+
 
 def get_history_column_names()->list:
     """returns the column names of the history data frame
@@ -179,6 +185,7 @@ def get_history_column_names()->list:
     column_names = data_frame.columns.values.tolist()
     return column_names
 
+
 def get_actuals_as_list()->list:
     """returns the actuals data as list
     Returns:
@@ -188,6 +195,7 @@ def get_actuals_as_list()->list:
     list_of_data = data_frame.values.tolist()
     return list_of_data
 
+
 def get_history_as_list()->list:
     """returns the history data as list
     Returns:
@@ -196,6 +204,27 @@ def get_history_as_list()->list:
     data_frame = pd.read_csv(hist_file_name)
     list_of_data = data_frame.values.tolist()
     return list_of_data
+
+
+def get_statistics()->dict:
+    """calculates the statistics of the actual data
+    Returns:
+        dict: dict of statistics
+    """
+    stats_dict = {}
+    df = pd.read_csv(actuals_file_name, index_col='Date', parse_dates=['Date'])
+    stats_dict["Gasverbrauch (kWh)"] = df["Gas"][-1] - df["Gas"][0]
+    stats_dict["Wasserverbrauch (qm)"] = df["Water"][-1] - df["Water"][0]
+    stats_dict["Strombezug (kWh)"] = df["Power In"][-1] - df["Power In"][0]
+    stats_dict["Strompeinspeisung (kWh)"] = df["Power Out"][-1] - df["Power Out"][0]
+    stats_dict["Stromproduktion (kWh)"] = round(df["Power Gen"].sum(), 2)
+    stats_dict["Eigenverbrauch (kWh)"] = df["Power PV used"].sum()
+    stats_dict["Stromverbrauch (kWh)"] = df["Power used"].sum()
+    stats_dict["Strom für V60 (kWh)"] = df["Power Car Stephan"][-1] - df["Power Car Stephan"][0]
+    stats_dict["Strom für XC40 (kWh)"] = df["Power Car Heike"][-1] - df["Power Car Heike"][0]
+    stats_dict["Strom für alle Autos (kWh)"] = (df["Power Car Stephan"][-1] - df["Power Car Stephan"][0]) + (df["Power Car Heike"][-1] - df["Power Car Heike"][0]) + (df["Power Car Wink"][-1] - df["Power Car Wink"][0])
+    return stats_dict
+
 ################################################################################
 # Classes
 

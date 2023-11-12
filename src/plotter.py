@@ -35,29 +35,6 @@ import storage_handler
 
 ################################################################################
 # Functions
-
-def plot_overall_counters_to_json() -> str:
-    """Generates a plot of all counters and return it as json format
-    Returns:
-        str: json representation of a figure showing the overall counters
-    """
-    data_frame = storage_handler.load_actuals_data()
-    col_set = [["date", "Datum"], ["gas", "Gas"], ["power", "Strom"], ["water", "Wasser"]]
-    fig = plot_x_graphs_scatter(data_frame, col_set)
-    return convert_figure_to_json(fig)
-
-def plot_consumption_to_json() -> str:
-    """Generates a plot of consumption and return it as json format
-    Returns:
-        str: json representation of a figure showing consumptions
-    """
-    data_frame = storage_handler.load_actuals_data()
-    diff_cols = ['gas', 'power', 'water']
-    data_frame[diff_cols] = data_frame[diff_cols].diff()
-    col_set = [["date", "Datum"], ["gas", "Gas"], ["power", "Strom"], ["water", "Wasser"]]
-    fig = plot_x_graphs_bar(data_frame, col_set)
-    return convert_figure_to_json(fig)
-
 def plot_historical_to_json() -> str:
     """Generates a plot of historical and return it as json format
 
@@ -69,6 +46,7 @@ def plot_historical_to_json() -> str:
                ["Power Out", "Stromeinspeisung"], ["Water", "Wasser"]]
     fig = plot_x_graphs_vertical_bar(data_frame, col_set)
     return convert_figure_to_json(fig)
+
 
 def plot_x_graphs_scatter(data_frame:pd.DataFrame, df_cols:list) -> go.Figure:
     """Plots the dataframe to x graph plots
@@ -82,18 +60,15 @@ def plot_x_graphs_scatter(data_frame:pd.DataFrame, df_cols:list) -> go.Figure:
         raise ValueError("Data frame doesn't have enough columns")
     if len(df_cols) < 2:
         raise ValueError("Column list doesn't have at least two columns")
-
     graph_columns = len(df_cols) - 1 # includes y axis at 0
     fig = make_subplots(rows=1, cols=graph_columns)
-
-
     for i in range(1,len(df_cols)):
         fig.add_trace(
             go.Scatter(x=data_frame[df_cols[0][0]].tolist(),
                         y=data_frame[df_cols[i][0]].tolist(), name=df_cols[i][1]),
                         row=1, col=i)
-
     return fig
+
 
 def plot_x_graphs_bar(data_frame:pd.DataFrame, df_cols:list) -> go.Figure:
     """Plots the dataframe to x graph plots
@@ -115,8 +90,8 @@ def plot_x_graphs_bar(data_frame:pd.DataFrame, df_cols:list) -> go.Figure:
         fig.add_trace(
             go.Bar(x=data_frame[df_cols[0][0]].tolist(), y=data_frame[df_cols[i][0]].tolist(),
                    name=df_cols[i][1]), row=1, col=i)
-
     return fig
+
 
 def plot_x_graphs_vertical_bar(data_frame:pd.DataFrame, df_cols:list) -> go.Figure:
     """Plots the dataframe to x graph plots vertical
@@ -138,16 +113,7 @@ def plot_x_graphs_vertical_bar(data_frame:pd.DataFrame, df_cols:list) -> go.Figu
         fig.add_trace(
             go.Bar(x=data_frame[df_cols[0][0]].tolist(), y=data_frame[df_cols[i][0]].tolist(),
                    name=df_cols[i][1]), row=i, col=1)
-
     return fig
-
-def direct_plot_consumption():
-    """This function directly plot the consumption
-    """
-    data_frame = storage_handler.load_actuals_data()
-    col_set = [["date", "Datum"], ["gas", "Gas"], ["power", "Strom"], ["water", "Wasser"]]
-    fig = plot_x_graphs_scatter(data_frame, col_set)
-    fig.show()
 
 def convert_figure_to_json(figure:go.Figure) -> str:
     """Convert a figure into a json string
