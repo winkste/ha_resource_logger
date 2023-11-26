@@ -46,7 +46,7 @@ from flask_nav import Nav
 from flask_nav.elements import Navbar, View
 from dominate.tags import img
 
-import mqtt_secrets
+import my_secrets
 import mqtt_ctrl
 #from energy_log import EnergyLog
 import data_analysis as da
@@ -95,8 +95,8 @@ def get_login():
     if request.method == "POST":
         user = request.form["username"]
         pwd = request.form["pwd"]
-        if user in mqtt_secrets.USERS.keys():
-            if mqtt_secrets.USERS[user] == pwd:
+        if user in my_secrets.USERS.keys():
+            if my_secrets.USERS[user] == pwd:
                 session["user"] = user
                 session.permanent = True
                 flash(f"{user} sucessful logged in.", "info")
@@ -239,7 +239,7 @@ def get_statistics_view():
     obj : returns a page that is displayed in the browser
     """
     if "user" in session:
-        stats_data = da.get_statistics()
+        stats_data = da.get_statistics(2023)
         # Zipping the data before passing it to the template
         zipped_data = zip(list(stats_data.keys()), list(stats_data.values()))
         return render_template('view_stats.html', page_name="Statistiken", stats_data=zipped_data)

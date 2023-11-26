@@ -29,20 +29,12 @@ __version__ = "0.0.1"
 
 ################################################################################
 # Variables
-GAS_NR:str          = "7ELS2532642359"
-POWER_NR:str        = "2010806320"
-WATER_NR:str        = "45968446-2000"
-
-GAS_LAST_YEAR:int   = 4110
-POWER_LAST_YEAR:int = 54775
-WATER_LAST_YEAR:int = 45
-
 DATA_FOLDER_PATH:str = "./bin/"
 
 # used to run on the mac
-#PORT_NUMBER:int = 5050
+PORT_NUMBER:int = 5050
 # used to build the docker container for synology
-PORT_NUMBER:int = 5000
+#PORT_NUMBER:int = 5000
 
 
 

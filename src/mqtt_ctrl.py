@@ -33,7 +33,7 @@ __version__ = "0.0.1"
 # Imports
 from time import sleep
 from paho.mqtt import publish
-import mqtt_secrets
+import my_secrets
 
 ################################################################################
 # Variables
@@ -51,9 +51,9 @@ def publish_data(topic, payload = ""):
     payload : str, optional
         This is the payload of the publication
     '''
-    publish.single(topic, payload, hostname=mqtt_secrets.HOST_NAME,
-                    port=mqtt_secrets.PORT, client_id=mqtt_secrets.CLIENT_ID,
-                    auth=mqtt_secrets.AUTH)
+    publish.single(topic, payload, hostname=my_secrets.HOST_NAME,
+                    port=my_secrets.PORT, client_id=my_secrets.CLIENT_ID,
+                    auth=my_secrets.AUTH)
 
 def mqtt_ctrl_test():
     '''

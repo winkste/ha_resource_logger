@@ -1,55 +1,53 @@
 # Resource Logging
 
-Home resource logger for water gas and electricity.
-This project gives you two simple user interface ways to track manually your used resources:
-- command line based
-- web page based
+Home resource logger for consumables like water gas and electricity.
+This project base on a flask WEB interface with multiple pages.
 
-To execute the web page based interface I prepared also a docker container image.
+The project can be executed on three drifferent ways:
+- as stand-alone flask project locally running
+- as docker container: MAC OSX M2 based
+- as docker container: Intel based, e.g. Synology
 
-### Command Line Interface
-The command line interface shows the counter ID and the last entered data set. With the different options you can update the individual values and at the end using (s) save it and publish it to the MQTT broker.
-
-<img width="462" alt="cmd_line" src="https://user-images.githubusercontent.com/9803344/158741622-6a9c1fac-a6d1-4edb-97ba-254a2cf5f4b3.png">
 
 ### Web Interface
 The software is using flask and bootstrap to build a simple web application. It is using login mechanism controlled by a user dictionary in the my_secrets.py file.
 The dialogs are:
-- Login
-<img width="664" alt="login" src="https://user-images.githubusercontent.com/9803344/158741645-a6efab70-c0dc-43bc-b168-4bf7beed1785.png">
-- Zählerstände (Entry of current counter values)
-<img width="637" alt="entry" src="https://user-images.githubusercontent.com/9803344/158741669-759d0dc3-bfd2-4a2e-a16d-5d22732a76ef.png">
-- Historie (Plot all collected data)
-<img width="628" alt="log" src="https://user-images.githubusercontent.com/9803344/158741685-e9d79aad-cc21-4940-bae7-3bc220a30b0a.png">
+- Login:
+![Login](documents/Login.png)
+
+- Counter (Entry of current counter values):
+![Counter Entry](<documents/Enter Counters.png>)
+
+- Enter Consume over year:
+![Alt text](<documents/Enter Consumes.png>)
+
+- Consumptions per year (Plot all collected data)
+![Consumes plot](<documents/Consume Plot.png>)
+
+- Table Counter:
+  ![Table Counter](<documents/Counter Table.png>)
+
+- Table Consumtions per year
+  ![Table Consumtions per year](<documents/Table Consumables.png>)
+
+- Statistics Table
+![Stats Table](documents/Statistics.png)
+
 - Logout (redirects to login)
-<img width="633" alt="login" src="https://user-images.githubusercontent.com/9803344/158521520-496c97f5-c0b3-4f60-9067-e4a052c8178a.png">
+![Logout](documents/Logout.png)
 
-
-The values are stored in a python file as dictionary.
-
-Additional the actual year consumption is calculated giving the year end reading in the secrets file.
-
-These actual consumptions are populated to a mqtt broker.
+The values are stored currently in two separate CSV files located in bin folder. The storage and load is encapsulated by database_hdl.py and could be replaced by any other storage methods like SQL databases.
 
 ### Build the program and execute
 #### Secrets configuration
 
-```
+```python
 my_secrets.py:
 
-hostname = ""
-port = 1883
-client_id = ""
-auth = {'username':"user", 'password':"pwd"}
-
-gas_nr = "gas id"
-power_nr = "power id"
-water_nr = "water id"
-
-gas_last_year = 0
-power_last_year = 0
-water_last_year = 0
-
+hostname = "127.0.0.1" # IP address of MQTT broaker
+port = 1883 # port of mqtt broaker
+client_id = "" # client id of mqtt client
+auth = {'username':"user", 'password':"pwd"} # login credentials for mqtt
 users = {"user": "pwd"}
 ```
 #### Build and activate Virtual environment
@@ -65,11 +63,46 @@ web interface:
 ```
 python src/app.py  
 ```
-command line interface:
+
+launch configuration for VSCode:
+```json
+{
+    // Verwendet IntelliSense zum Ermitteln möglicher Attribute.
+    // Zeigen Sie auf vorhandene Attribute, um die zugehörigen Beschreibungen anzuzeigen.
+    // Weitere Informationen finden Sie unter https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Flask",
+            "type": "python",
+            "request": "launch",
+            "module": "flask",
+            "env": {
+                "FLASK_APP": "./src/app.py",
+                "FLASK_DEBUG": "1"
+            },
+            "args": [
+                "run",
+                "--no-debugger",
+                "--no-reload"
+            ],
+            "jinja": true,
+            "justMyCode": true
+        }
+    ]
+}
 ```
-python src/cmd_main.py
-```
+
+additional settings can be made in parameter.py:
+```python
+DATA_FOLDER_PATH:str = "./bin/"
+
+# used to run on the mac
+#PORT_NUMBER:int = 5050
+# used to build the docker container for synology
+PORT_NUMBER:int = 5000
 #### Using the Docker container
+```
 build the image:
 ```
 docker build --tag pyth-ha-rec .
@@ -94,7 +127,6 @@ docker save -o pyth-ha-rec.tar pyth-ha-rec
 
 ## TODO
 - Update the readme
-- delete command line function, no longer supported
-- make the data storage of actual data independent from year
-- make the analysis of actuals independent from years
 - build the docker containers in github actions
+- publish actual year consumptions to home assistant via MQTT
+- 

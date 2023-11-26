@@ -26,7 +26,7 @@ __version__ = "0.0.1"
 
 ################################################################################
 # Imports
-#from json import loads, dumps
+from datetime import date
 import pandas as pd
 import database_hdl as db
 
@@ -173,23 +173,33 @@ def set_history_from_list(input_data:list)->None:
     db.store_historical_data_time_indexed(data_frame)
 
 
-def get_statistics()->dict:
-    """calculates the statistics of the actual data
+def get_statistics(year:int)->dict:
+    """Returns the statistics for the year hand over as parameter.
+    Args:
+        year (int): year of the statistics
     Returns:
-        dict: dict of statistics
+        dict: A dictionary with all statistics.
     """
-    stats_dict = {}
+    # get the start and end dates of the year
+    start_date = date(year, 1, 1)
+    end_date = date(year, 12, 1)
+    # load the data frame
     df = db.load_counter_data_time_indexed()
-    stats_dict["Gasverbrauch (kWh)"] = df["Gas"][-1] - df["Gas"][0]
-    stats_dict["Wasserverbrauch (qm)"] = df["Water"][-1] - df["Water"][0]
-    stats_dict["Strombezug (kWh)"] = df["Power In"][-1] - df["Power In"][0]
-    stats_dict["Strompeinspeisung (kWh)"] = df["Power Out"][-1] - df["Power Out"][0]
-    stats_dict["Stromproduktion (kWh)"] = round(df["Power Gen"].sum(), 2)
-    stats_dict["Eigenverbrauch (kWh)"] = df["Power PV used"].sum()
-    stats_dict["Stromverbrauch (kWh)"] = df["Power used"].sum()
-    stats_dict["Strom für V60 (kWh)"] = df["Power Car Stephan"][-1] - df["Power Car Stephan"][0]
-    stats_dict["Strom für XC40 (kWh)"] = df["Power Car Heike"][-1] - df["Power Car Heike"][0]
-    stats_dict["Strom für alle Autos (kWh)"] = (df["Power Car Stephan"][-1] - df["Power Car Stephan"][0]) + (df["Power Car Heike"][-1] - df["Power Car Heike"][0]) + (df["Power Car Wink"][-1] - df["Power Car Wink"][0])
+    # filter for year
+    year_df = df[start_date:end_date]
+    # generate the statistics
+    stats_dict = {}
+    if year_df.index.size >= 2:
+        stats_dict["Gasverbrauch (kWh)"] = year_df["Gas"][-1] - year_df["Gas"][0]
+        stats_dict["Wasserverbrauch (qm)"] = year_df["Water"][-1] - year_df["Water"][0]
+        stats_dict["Strombezug (kWh)"] = year_df["Power In"][-1] - year_df["Power In"][0]
+        stats_dict["Strompeinspeisung (kWh)"] = year_df["Power Out"][-1] - year_df["Power Out"][0]
+        stats_dict["Stromproduktion (kWh)"] = round(year_df["Power Gen"].sum(), 2)
+        stats_dict["Eigenverbrauch (kWh)"] = year_df["Power PV used"].sum()
+        stats_dict["Stromverbrauch (kWh)"] = year_df["Power used"].sum()
+        stats_dict["Strom für V60 (kWh)"] = year_df["Power Car Stephan"][-1] - year_df["Power Car Stephan"][0]
+        stats_dict["Strom für XC40 (kWh)"] = year_df["Power Car Heike"][-1] - year_df["Power Car Heike"][0]
+        stats_dict["Strom für alle Autos (kWh)"] = (year_df["Power Car Stephan"][-1] - year_df["Power Car Stephan"][0]) + (df["Power Car Heike"][-1] - df["Power Car Heike"][0]) + (df["Power Car Wink"][-1] - df["Power Car Wink"][0])
     return stats_dict
 
 ################################################################################
