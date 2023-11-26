@@ -31,7 +31,7 @@ import pandas as pd
 import plotly
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import storage_handler
+import data_analysis as da
 
 ################################################################################
 # Functions
@@ -41,7 +41,7 @@ def plot_historical_to_json() -> str:
     Returns:
         str: json representation of a figure showing consumptions
     """
-    data_frame = storage_handler.load_historical_data()
+    data_frame = da.get_historical_data_as_df()
     col_set = [["Year", "Jahr"], ["Gas", "Gas"], ["Power In", "Strombezug"],
                ["Power Out", "Stromeinspeisung"], ["Water", "Wasser"]]
     fig = plot_x_graphs_vertical_bar(data_frame, col_set)

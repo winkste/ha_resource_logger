@@ -91,3 +91,10 @@ save and deploy the image:
 docker save -o pyth-ha-rec.tar pyth-ha-rec
 
 ```
+
+## TODO
+- Update the readme
+- delete command line function, no longer supported
+- make the data storage of actual data independent from year
+- make the analysis of actuals independent from years
+- build the docker containers in github actions

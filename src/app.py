@@ -49,11 +49,7 @@ from dominate.tags import img
 import mqtt_secrets
 import mqtt_ctrl
 #from energy_log import EnergyLog
-from storage_handler import store_actuals_from_list, load_actuals_to_string
-from storage_handler import load_historical_to_string, store_history_from_list
-from storage_handler import get_last_actual_to_list, get_last_history_to_list
-from storage_handler import get_actuals_column_names, get_history_column_names
-from storage_handler import get_actuals_as_list, get_history_as_list, get_statistics
+import data_analysis as da
 import plotter
 import parameter
 
@@ -150,13 +146,13 @@ def get_new_data_entry_page():
             data_set = request.get_json()
             new_data = data_set['values']
             # store the data
-            store_actuals_from_list(new_data)
+            da.set_new_counter_data_set(new_data)
             #TODO: publish data via mqtt
             flash("data successfully stored and published")
             return jsonify({'message': 'Values updated successfully'})
         return render_template('new_data.html', jumpPage='/newyear', page_name="Zählerstände",
-                               ccolumn_names=get_actuals_column_names(),
-                               initial_data=get_last_actual_to_list())
+                               ccolumn_names=da.get_counter_column_names(),
+                               initial_data=da.get_last_counter_row_as_list())
     flash("You are not logged in", "info")
     return redirect(url_for("get_login"))
 
@@ -175,12 +171,12 @@ def get_new_history_entry_page():
             data_set = request.get_json()
             new_data = data_set['values']
             # store the data
-            store_history_from_list(new_data)
+            da.set_history_from_list(new_data)
             #TODO: publish data via mqtt
             flash("data successfully stored and published")
             return jsonify({'message': 'Values updated successfully'})
         return render_template('new_data.html', jumpPage='/newyear', page_name="Verbräuche",
-                               ccolumn_names=get_history_column_names(), initial_data=get_last_history_to_list())
+                               ccolumn_names=da.get_history_column_names(), initial_data=da.get_last_history_row_as_list())
     flash("You are not logged in", "info")
     return redirect(url_for("get_login"))
 
@@ -202,7 +198,7 @@ def get_historical():
 
 
 @app.route("/viewhist", methods = ["GET"])
-def get_actuals_view():
+def get_historical_view():
     """
     Generates the historical page for flask
     Return
@@ -211,15 +207,15 @@ def get_actuals_view():
     """
     if "user" in session:
         return render_template('view_history.html', page_name="Verbräuche",
-                               ccolumn_names=get_history_column_names(),
-                               initial_data=get_history_as_list())
+                               ccolumn_names=da.get_history_column_names(),
+                               initial_data=da.get_history_as_list())
 
     flash("You are not logged in", "info")
     return redirect(url_for("get_login"))
 
 
 @app.route("/viewactuals", methods = ["GET"])
-def get_historical_view():
+def get_actuals_view():
     """
     Generates the actuals page for flask
     Return
@@ -228,8 +224,8 @@ def get_historical_view():
     """
     if "user" in session:
         return render_template('view_history.html', page_name="Zählerstände",
-                               ccolumn_names=get_actuals_column_names(),
-                               initial_data=get_actuals_as_list())
+                               ccolumn_names=da.get_counter_column_names(),
+                               initial_data=da.get_counters_as_list())
     flash("You are not logged in", "info")
     return redirect(url_for("get_login"))
 
@@ -243,7 +239,7 @@ def get_statistics_view():
     obj : returns a page that is displayed in the browser
     """
     if "user" in session:
-        stats_data = get_statistics()
+        stats_data = da.get_statistics()
         # Zipping the data before passing it to the template
         zipped_data = zip(list(stats_data.keys()), list(stats_data.values()))
         return render_template('view_stats.html', page_name="Statistiken", stats_data=zipped_data)
@@ -260,7 +256,7 @@ def get_history_api():
     obj : returns a string of data or redirects to the login display
     """
     if "user" in session:
-        return load_historical_to_string()
+        return da.get_historical_as_string()
     flash("You are not logged in", "info")
     return redirect(url_for("get_login"))
 
@@ -274,7 +270,7 @@ def data_func():
     obj : returns a string of data or redirects to the login display
     """
     if "user" in session:
-        return load_actuals_to_string()
+        return da.get_counters_as_string()
     flash("You are not logged in", "info")
     return redirect(url_for("get_login"))
 
