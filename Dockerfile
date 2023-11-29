@@ -19,6 +19,7 @@ COPY /src/mqtt_ctrl.py /bin/mqtt_ctrl.py
 COPY /src/my_secrets.py /bin/my_secrets.py
 COPY /src/parameter.py /bin/parameter.py
 COPY /src/plotter.py /bin/plotter.py
+COPY /src/version.py /bin/version.py
 COPY /src/templates/base.html /bin/templates/base.html
 COPY /src/templates/history.html /bin/templates/history.html
 COPY /src/templates/login.html /bin/templates/login.html
@@ -26,6 +27,7 @@ COPY /src/templates/logout.html /bin/templates/logout.html
 COPY /src/templates/new_data.html /bin/templates/new_data.html
 COPY /src/templates/view_history.html /bin/templates/view_history.html
 COPY /src/templates/view_stats.html /bin/templates/view_stats.html
+COPY /src/templates/version.html /bin/templates/version.html
 COPY /src/static/img/logo.png /bin/static/img/logo.png
 COPY /src/static/styles/style.css /bin/static/styles/style.css
 COPY /bin/counters.csv /bin/counters.csv
