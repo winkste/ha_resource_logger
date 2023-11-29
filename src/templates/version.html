@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block title %}{{page_name}}{% endblock %}
+
+{% block content2 %}
+    {% for para in version_info %}
+        <p>{{para}}</p>
+    {% endfor %}
+{% endblock %}

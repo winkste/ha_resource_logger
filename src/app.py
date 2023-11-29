@@ -52,6 +52,7 @@ import mqtt_ctrl
 import data_analysis as da
 import plotter
 import parameter
+from version import get_complete_story_of_program
 
 
 ################################################################################
@@ -66,6 +67,7 @@ topbar = Navbar(logo,
                 View('Tabelle Zähler', 'get_actuals_view'),
                 View('Tabelle Jahresverbräuche', 'get_historical_view'),
                 View('Statistiken', 'get_statistics_view'),
+                View('Version', 'get_version'),
                 View('Logout', 'get_logout')
                 )
 
@@ -129,6 +131,21 @@ def get_logout():
         session.pop("user", None)
     else:
         flash("You are not privisously logged in.")
+    return redirect(url_for("get_login"))
+
+@app.route("/version")
+def get_version():
+    """
+    Generates the version page for flask
+    Return
+    --------
+    obj : returns a page that is displayed in the browser
+    """
+    if "user" in session:
+        return render_template('version.html', page_name="Version",
+                               version_info=get_complete_story_of_program().split('\n'))
+
+    flash("You are not logged in", "info")
     return redirect(url_for("get_login"))
 
 
