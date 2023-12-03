@@ -188,3 +188,134 @@ df = data_frame.tail(1)
 df.index = df.index.astype(str)
 list_data = df.iloc[-1].tolist()
 # %%
+
+#%%
+import os
+from pathlib import Path
+import pandas as pd
+
+actuals_file_name:str = "../bin/2023.csv"
+df = pd.read_csv(actuals_file_name)
+column_names = df.columns.values.tolist()
+
+
+#%%
+import os
+from pathlib import Path
+import pandas as pd
+
+actuals_file_name:str = "../bin/2023.csv"
+df = pd.read_csv(actuals_file_name)
+list_of_data = df.values.tolist()
+
+# %%
+import os
+from pathlib import Path
+import pandas as pd
+
+actuals_file_name:str = "../bin/2023.csv"
+df = pd.read_csv(actuals_file_name, index_col='Date', parse_dates=['Date'])
+
+
+# %%
+df.values[0]
+df.values[-1] - df.values[0]
+# %%
+df.idxmax()
+# %%
+df.diff()
+# %%
+dff_df = df.diff()
+# %%
+df["Gas"][-1] - df["Gas"][0]
+# %%
+df["Water"][-1] - df["Water"][0]
+# %%
+df["Power In"][-1] - df["Power In"][0]
+# %%
+df["Power Out"][-1] - df["Power Out"][0]
+# %%
+df["Power Gen"].sum()
+# %%
+df["Power PV used"].sum()
+#  %%
+df["Power used"].sum()
+# %%
+df["Power Car Stephan"][-1] - df["Power Car Stephan"][0]
+# %%
+df["Power Car Heike"][-1] - df["Power Car Heike"][0]
+# %%
+df["Power Car Wink"][-1] - df["Power Car Wink"][0]
+# %%
+stats_dict = {}
+stats_dict["Gas Sum"] = df["Gas"][-1] - df["Gas"][0]
+stats_dict["Water Sum"] = df["Water"][-1] - df["Water"][0]
+stats_dict["Power In"] = df["Power In"][-1] - df["Power In"][0]
+stats_dict["Power Out"] = df["Power Out"][-1] - df["Power Out"][0]
+stats_dict["Power Generated"] = df["Power Gen"].sum()
+stats_dict["Power from PV used"] = df["Power PV used"].sum()
+stats_dict["Power consumed"] = df["Power used"].sum()
+stats_dict["Power stored to V60"] = df["Power Car Stephan"][-1] - df["Power Car Stephan"][0]
+stats_dict["Power stored to XC40"] = df["Power Car Heike"][-1] - df["Power Car Heike"][0]
+stats_dict["Power used for cars"] = (df["Power Car Stephan"][-1] - df["Power Car Stephan"][0]) + (df["Power Car Heike"][-1] - df["Power Car Heike"][0]) + (df["Power Car Wink"][-1] - df["Power Car Wink"][0])
+
+list_from_dict = [stats_dict.keys(), stats_dict.values()]
+
+
+# %%
+import pandas as pd
+import matplotlib.pyplot as plt
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.platypus import Table
+from reportlab.lib import colors
+
+# Sample data for the table
+data = {'Name': ['Alice', 'Bob', 'Charlie'],
+        'Age': [25, 30, 35],
+        'City': ['New York', 'San Francisco', 'Los Angeles']}
+
+# Create a Pandas DataFrame
+df = pd.DataFrame(data)
+
+# Create a plot (you can replace this with your own data and plot)
+plt.plot([1, 2, 3], [4, 5, 6])
+plt.xlabel('X-axis')
+plt.ylabel('Y-axis')
+plt.title('Sample Plot')
+
+# Save the plot to a file
+plt.savefig('plot.png', bbox_inches='tight')
+plt.close()  # Close the plot to avoid duplicate figures
+
+# Create a PDF document
+pdf_filename = 'output.pdf'
+pdf = canvas.Canvas(pdf_filename, pagesize=letter)
+
+# Add text to the PDF
+pdf.drawString(100, 80, "Hello, this is a PDF document with text, a table, and a figure.")
+
+# Add the saved plot to the PDF
+pdf.drawInlineImage('plot.png', 100, 550, width=40, height=30)
+
+# Add a table to the PDF
+table_data = [df.columns[:, ].values.astype(str)] + df.values.tolist()
+table = Table(table_data)
+table.setStyle([('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER')])
+
+table.wrapOn(pdf, 400, 200)
+table.drawOn(pdf, 100, 250)
+
+# Save the PDF document
+pdf.save()
+
+# Clean up temporary files
+import os
+os.remove('plot.png')
+
+print(f'PDF created successfully: {pdf_filename}')
+
+# %%

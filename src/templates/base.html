@@ -1,27 +1,46 @@
-{% extends "bootstrap/base.html" %}
-
-{% block title %}TEST{% endblock %}
-
-{% block navbar %}
-    {{nav.top.render()}}
-{% endblock %}
-
-
-{% block content %}
-<div class="container-fluid">
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for msg in messages %}
-                <p>{{msg}}</p>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/style.css') }}">
+</head>
+<body>
+    <nav>
+        <div class="menu-container">
+            <div class="dropdown">
+                <a href="#" class="dropbtn">Menu</a>
+                <div class="dropdown-content">
+                    <a href="/">Login</a>
+                    <a href="/newactuals">Eingabe Zählerstände</a>
+                    <a href="/newhist">Eingabe Jahresverbräuche</a>
+                    <a href="/hist">Ansicht Jahresverbräuche</a>
+                    <a href="/viewactuals">Tabelle Zähler</a>
+                    <a href="/viewhist">Tabelle Jahresverbräuche</a>
+                    <a href="/viewstats">Statistiken</a>
+                    <a href="/about">Version</a>
+                    <a href="/logout">Logout</a>
+                </div>
+            </div>
+        </div>
+        <div class="icon-container">
+            <!-- Example icon, replace with your preferred icon or image -->
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Icon" class="icon">
+        </div>
+    </nav>
+    {% block content %}
+    <div class="container-fluid">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for msg in messages %}
+                    <p>{{msg}}</p>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
     {% block content2 %}
     {% endblock %}
-</div>
-{% endblock %}
-
-{% block styles %}
-{{super()}}
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/style.css')}}">
-{% endblock %}
+    </div>
+    {% endblock %}
+</body>
+</html>

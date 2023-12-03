@@ -36,18 +36,14 @@ __version__ = "0.0.1"
 ################################################################################
 # Imports
 
-import collections.abc
-import collections
+#import collections.abc
+#import collections
 from datetime import timedelta
-collections.MutableMapping = collections.abc.MutableMapping
+#collections.MutableMapping = collections.abc.MutableMapping
 from flask import Flask, redirect, url_for, render_template, request, session, flash, jsonify
-from flask_bootstrap import Bootstrap
-from flask_nav import Nav
-from flask_nav.elements import Navbar, View
-from dominate.tags import img
 
 import my_secrets
-import mqtt_ctrl
+#import mqtt_ctrl
 #from energy_log import EnergyLog
 import data_analysis as da
 import plotter
@@ -58,31 +54,9 @@ from version import get_complete_story_of_program
 ################################################################################
 # Variables
 port_number:int = parameter.PORT_NUMBER
-logo = img(src='./static/img/logo.png', height="50", width="50", style="margin-top:-15px")
-topbar = Navbar(logo,
-                View('Login', 'get_login'),
-                View('Eingabe Zählerstände', 'get_new_data_entry_page'),
-                View('Eingabe Jahresverbräuche', 'get_new_history_entry_page'),
-                View('Ansicht Jahresverbräuche', 'get_historical'),
-                View('Tabelle Zähler', 'get_actuals_view'),
-                View('Tabelle Jahresverbräuche', 'get_historical_view'),
-                View('Statistiken', 'get_statistics_view'),
-                View('Version', 'get_version'),
-                View('Logout', 'get_logout')
-                )
-
-# registers the "top" menubar
-nav = Nav()
-nav.register_element('top', topbar)
-
 app = Flask(__name__)
 app.secret_key = "hello"
 app.permanent_session_lifetime = timedelta(minutes=5)
-
-Bootstrap(app)
-
-nav.init_app(app)
-
 
 ################################################################################
 # Functions
@@ -133,7 +107,8 @@ def get_logout():
         flash("You are not privisously logged in.")
     return redirect(url_for("get_login"))
 
-@app.route("/version")
+
+@app.route("/about")
 def get_version():
     """
     Generates the version page for flask
@@ -149,7 +124,7 @@ def get_version():
     return redirect(url_for("get_login"))
 
 
-@app.route('/newyear', methods = ["GET", "POST"])
+@app.route('/newactuals', methods = ["GET", "POST"])
 def get_new_data_entry_page():
     """
     Generates the new data entry page
@@ -162,12 +137,11 @@ def get_new_data_entry_page():
             # get the data from the page
             data_set = request.get_json()
             new_data = data_set['values']
-            # store the data
-            da.set_new_counter_data_set(new_data)
+            # store the data        
+            flash(da.set_new_counter_data_set(new_data))
             #TODO: publish data via mqtt
-            flash("data successfully stored and published")
             return jsonify({'message': 'Values updated successfully'})
-        return render_template('new_data.html', jumpPage='/newyear', page_name="Zählerstände",
+        return render_template('new_data.html', jumpPage='/newactuals', page_name="Zählerstände",
                                ccolumn_names=da.get_counter_column_names(),
                                initial_data=da.get_last_counter_row_as_list())
     flash("You are not logged in", "info")

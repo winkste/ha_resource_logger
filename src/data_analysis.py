@@ -26,7 +26,7 @@ __version__ = "0.0.1"
 
 ################################################################################
 # Imports
-from datetime import date
+from datetime import date, datetime
 import pandas as pd
 import database_hdl as db
 
@@ -76,26 +76,42 @@ def get_counter_column_names()->list:
     return column_names
 
 
-def set_new_counter_data_set(input_data:list)->None:
+def set_new_counter_data_set(input_data:list)->str:
     """Sets a new set of data
     Args:
-        input_data (list): list of strings
+        input_data (list): new data set as list
+    Returns:
+        str: string with result message of operation
     """
-    # load the counter data into a time indexed data frame
-    data_frame = db.load_counter_data_time_indexed()
-    # prepare the new data set to be integrated into the data frame
-    # get the column names from the existing data frame as list
-    column_names = data_frame.columns.values.tolist()
-    # convert the first element in the input data into date object
-    new_date_index = pd.to_datetime(input_data[0]).date()
-    # slice just the data values without the date_time
-    new_data_set = input_data[1:]
-    # create a new dataframe based on the data set, the column names and the new time based index
-    new_row = pd.DataFrame([new_data_set], columns=column_names, index=[new_date_index])
-    # concatenate the two data frames to one
-    data_frame = pd.concat([data_frame, pd.DataFrame(new_row)], ignore_index=False)
-    # store the update dataframe back to file
-    db.store_counter_data_time_indexed(data_frame)
+
+    ops_error_code = _new_counter_set_data_validation(input_data)
+    if ops_error_code is None:
+        # load the counter data into a time indexed data frame
+        data_frame = db.load_counter_data_time_indexed()
+        print(data_frame)
+        # prepare the new data set to be integrated into the data frame
+        # get the column names from the existing data frame as list
+        column_names = data_frame.columns.values.tolist()
+        # convert the first element in the input data into date object
+        new_date_index = pd.to_datetime(input_data[0]).date()
+        # slice just the data values without the date
+        new_data_set = input_data[1:]
+        # create a new dataframe based on the data set, the column names and the new date based index
+        new_row = pd.DataFrame([new_data_set], columns=column_names, index=[new_date_index])
+        print(new_row)
+        print(pd.DataFrame(new_row))
+        # concatenate the two data frames to one
+        data_frame = pd.concat([data_frame, pd.DataFrame(new_row)], ignore_index=False)
+        #data_frame = data_frame.normalize()
+        print(data_frame)
+        data_frame.index = pd.to_datetime(data_frame.index)
+        print(data_frame)
+        data_frame.index = data_frame.index.normalize()
+        print(data_frame)
+        # store the update dataframe back to file
+        db.store_counter_data_time_indexed(data_frame)
+        ops_error_code = "data successfully stored and published"
+    return ops_error_code
 
 
 def get_historical_data_as_df()->pd.DataFrame:
@@ -190,18 +206,62 @@ def get_statistics(year:int)->dict:
     # generate the statistics
     stats_dict = {}
     if year_df.index.size >= 2:
-        stats_dict["Gasverbrauch (kWh)"] = year_df["Gas"][-1] - year_df["Gas"][0]
-        stats_dict["Wasserverbrauch (qm)"] = year_df["Water"][-1] - year_df["Water"][0]
-        stats_dict["Strombezug (kWh)"] = year_df["Power In"][-1] - year_df["Power In"][0]
-        stats_dict["Strompeinspeisung (kWh)"] = year_df["Power Out"][-1] - year_df["Power Out"][0]
+        stats_dict["Gasverbrauch (kWh)"] = round(year_df["Gas"][-1] - year_df["Gas"][0], 2)
+        stats_dict["Wasserverbrauch (qm)"] = round(year_df["Water"][-1] - year_df["Water"][0], 2)
+        stats_dict["Strombezug (kWh)"] = round(year_df["Power In"][-1] - year_df["Power In"][0], 2)
+        stats_dict["Strompeinspeisung (kWh)"] = round(year_df["Power Out"][-1] - year_df["Power Out"][0], 2)
         stats_dict["Stromproduktion (kWh)"] = round(year_df["Power Gen"].sum(), 2)
-        stats_dict["Eigenverbrauch (kWh)"] = year_df["Power PV used"].sum()
-        stats_dict["Stromverbrauch (kWh)"] = year_df["Power used"].sum()
-        stats_dict["Strom für V60 (kWh)"] = year_df["Power Car Stephan"][-1] - year_df["Power Car Stephan"][0]
-        stats_dict["Strom für XC40 (kWh)"] = year_df["Power Car Heike"][-1] - year_df["Power Car Heike"][0]
-        stats_dict["Strom für alle Autos (kWh)"] = (year_df["Power Car Stephan"][-1] - year_df["Power Car Stephan"][0]) + (df["Power Car Heike"][-1] - df["Power Car Heike"][0]) + (df["Power Car Wink"][-1] - df["Power Car Wink"][0])
+        stats_dict["Eigenverbrauch (kWh)"] = round(year_df["Power PV used"].sum(), 2)
+        stats_dict["Stromverbrauch (kWh)"] = round(year_df["Power used"].sum(), 2)
+        stats_dict["Strom für V60 (kWh)"] = round(year_df["Power Car Stephan"][-1] - year_df["Power Car Stephan"][0], 2)
+        stats_dict["Strom für XC40 (kWh)"] = round(year_df["Power Car Heike"][-1] - year_df["Power Car Heike"][0], 2)
+        stats_dict["Strom für alle Autos (kWh)"] = round((year_df["Power Car Stephan"][-1] - year_df["Power Car Stephan"][0]) + (df["Power Car Heike"][-1] - df["Power Car Heike"][0]) + (df["Power Car Wink"][-1] - df["Power Car Wink"][0]), 2)
     return stats_dict
 
+def _is_valid_datetime(date_string, date_format='%Y-%m-%d'):
+    """Check if a string is a valid date format
+    Args:
+        date_string (_type_): string to be analysed
+        date_format (str, optional): expected format. Defaults to '%Y-%m-%d'.
+
+    Returns:
+        _type_: _description_
+    """
+    try:
+        datetime.strptime(date_string, date_format)
+        return True
+    except ValueError:
+        return False
+
+def _new_counter_set_data_validation(input_data:list)->str:
+    """Validates the input data set
+    Args:
+        input_data (list): input data set
+    Returns:
+        str: None if ok, in case of error: error string
+    """
+    if not _is_valid_datetime(input_data[0]):
+        return "date format is not accepted"
+    for idx, item in enumerate(input_data[1:]):
+        if "," in item:
+            input_data[idx + 1] = item.replace(",", ".")
+        if _is_float_string(input_data[idx + 1]) is False:
+            return f"Value {input_data[idx + 1]} is not a number representation."
+    return None
+        
+def _is_float_string(input_string):
+    """_summary_
+    Args:
+        input_string (_type_): input string representation of a float or integer
+
+    Returns:
+        _type_: true if the string is a representation of float or integer
+    """
+    try:
+        float(input_string)
+        return True
+    except ValueError:
+        return False
 ################################################################################
 # Classes
 

@@ -129,4 +129,5 @@ docker save -o pyth-ha-rec.tar pyth-ha-rec
 - Update the readme
 - build the docker containers in github actions
 - publish actual year consumptions to home assistant via MQTT
-- 
+- add download buttons for the data files (https://dev.to/grahammorby/let-users-download-files-in-flask-5gjg)
+- add parameter check for history
