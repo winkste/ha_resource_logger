@@ -319,3 +319,7 @@ os.remove('plot.png')
 print(f'PDF created successfully: {pdf_filename}')
 
 # %%
+num = "1.12"
+num.isnumeric()
+
+# %%

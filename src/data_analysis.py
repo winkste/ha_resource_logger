@@ -110,7 +110,7 @@ def set_new_counter_data_set(input_data:list)->str:
         print(data_frame)
         # store the update dataframe back to file
         db.store_counter_data_time_indexed(data_frame)
-        ops_error_code = "data successfully stored and published"
+        ops_error_code = "data successfully stored"
     return ops_error_code
 
 
@@ -165,29 +165,35 @@ def get_history_column_names()->list:
     return column_names
 
 
-def set_history_from_list(input_data:list)->None:
+def set_history_from_list(input_data:list)->str:
     """Sets a new set of history
     Args:
         input_data (list): list of strings
+    Returns:
+        str: operation code
     """
-    # load the all data from the csv data set file
-    data_frame = db.load_historical_data_time_indexed()
-    # prepare the new data set to be integrated into the data frame
-    # get the column names from the existing data frame as list
-    column_names = data_frame.columns.values.tolist()
-    # convert the first element in the input data into date object
-    new_data_index = input_data[0]
-    # slice just the data values without the date_time
-    new_data_set = input_data[1:]
-    # create a new dataframe based on the data set, the column names and the new time based index
-    new_row = pd.DataFrame([new_data_set], columns=column_names, index=[new_data_index])
-    # concatenate the two data frames to one
-    data_frame = pd.concat([data_frame, pd.DataFrame(new_row)], ignore_index=False)
-    data_frame.index = data_frame.index.astype(int)
-    data_frame.sort_index()
-    # store the update dataframe back to file
-    db.store_historical_data_time_indexed(data_frame)
-
+    ops_error_code = None
+    ops_error_code = _new_hist_set_data_validation(input_data)
+    if ops_error_code is None:
+        # load the all data from the csv data set file
+        data_frame = db.load_historical_data_time_indexed()
+        # prepare the new data set to be integrated into the data frame
+        # get the column names from the existing data frame as list
+        column_names = data_frame.columns.values.tolist()
+        # convert the first element in the input data into date object
+        new_data_index = input_data[0]
+        # slice just the data values without the date_time
+        new_data_set = input_data[1:]
+        # create a new dataframe based on the data set, the column names and the new time based index
+        new_row = pd.DataFrame([new_data_set], columns=column_names, index=[new_data_index])
+        # concatenate the two data frames to one
+        data_frame = pd.concat([data_frame, pd.DataFrame(new_row)], ignore_index=False)
+        data_frame.index = data_frame.index.astype(int)
+        data_frame.sort_index()
+        # store the update dataframe back to file
+        db.store_historical_data_time_indexed(data_frame)
+        ops_error_code = "data successfully stored"
+    return ops_error_code
 
 def get_statistics(year:int)->dict:
     """Returns the statistics for the year hand over as parameter.
@@ -242,20 +248,43 @@ def _new_counter_set_data_validation(input_data:list)->str:
     """
     if not _is_valid_datetime(input_data[0]):
         return "date format is not accepted"
+   
+    # check all numbers are integer or floating point numbers
+    # with the "." as decimal separator
     for idx, item in enumerate(input_data[1:]):
         if "," in item:
             input_data[idx + 1] = item.replace(",", ".")
         if _is_float_string(input_data[idx + 1]) is False:
             return f"Value {input_data[idx + 1]} is not a number representation."
     return None
+
+def _new_hist_set_data_validation(input_data:list)->str:
+    """Validates the input history data set
+    Args:
+        input_data (list): string list of history data
+    Returns:
+        str: execution error or none in case of success
+    """
+    # check if the year is a decimal value
+    if not input_data[0].isdecimal():
+        return f"year format: {input_data[0]} not accepted"
+    
+    # check all numbers are integer or floating point numbers
+    # with the "." as decimal separator
+    for idx, item in enumerate(input_data[1:]):
+        if "," in item:
+            input_data[idx + 1] = item.replace(",", ".")
+        if _is_float_string(input_data[idx + 1]) is False:
+            return f"Value {input_data[idx + 1]} is not a number representation."
+    
+    return None
         
-def _is_float_string(input_string):
-    """_summary_
+def _is_float_string(input_string)->bool:
+    """checks if string represents a number
     Args:
         input_string (_type_): input string representation of a float or integer
-
     Returns:
-        _type_: true if the string is a representation of float or integer
+        bool: true if the string is a representation of float or integer
     """
     try:
         float(input_string)

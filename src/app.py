@@ -162,12 +162,12 @@ def get_new_history_entry_page():
             data_set = request.get_json()
             new_data = data_set['values']
             # store the data
-            da.set_history_from_list(new_data)
+            flash(da.set_history_from_list(new_data))
             #TODO: publish data via mqtt
-            flash("data successfully stored and published")
             return jsonify({'message': 'Values updated successfully'})
         return render_template('new_data.html', jumpPage='/newyear', page_name="Verbräuche",
-                               ccolumn_names=da.get_history_column_names(), initial_data=da.get_last_history_row_as_list())
+                               ccolumn_names=da.get_history_column_names(), 
+                               initial_data=da.get_last_history_row_as_list())
     flash("You are not logged in", "info")
     return redirect(url_for("get_login"))
 
