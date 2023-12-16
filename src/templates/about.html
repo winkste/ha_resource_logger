@@ -1,8 +1,8 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
 
-{% block title %}About{% endblock %}
-
-{% block content %}
-    <h1>About Us</h1>
-    <p>This is the about page content.</p>
+{% block content2 %}
+    <h1>{{ page_name }} </h1>
+    {% for para in version_info %}
+        <p>{{para}}</p>
+    {% endfor %}
 {% endblock %}

@@ -21,15 +21,19 @@ __date__ = "2022/02/20"
 __deprecated__ = False
 __license__ = "GPLv3"
 __maintainer__ = "winkste"
-__status__ = "Development"
-__version__ = "0.0.1"
+__status__ = "BETA"
 __software_name__ = "ha_resource_log"
 __description__ = """This Software stores and analysis home consumables like
 gas consumption, water consumption and power consumption. Additional it handles
 power generation."""
+
+__version__ = "0.0.4"
 __version_log__ = """
 v0.0.1      01.01.2023      SWI     initial version
 v0.0.2      27.11.2023      SWI     reworked version to new look and feel using table style
+v0.0.3      02.12.2023      SWI     reworked html pages to simplify code
+                                    introduced input validation
+v0.0.4      15.12.2023      SWI     updated the statistics calculation
 """
 ################################################################################
 # Imports
@@ -87,7 +91,7 @@ def get_complete_story_of_program()->str:
     story = story + f"Program: {__software_name__} \n"
     story = story + f"Status of Program: {__status__}\n"
     story = story + f"License: {__license__}\n"
-    story = story + f"Status of Program: {__status__}\n\n"
+    story = story + f"Actual version: {__version__}\n\n"
     story = story + f"Description: {__description__}\n\n"
     story = story + "Version Log:"
     story = story + f"{__version_log__}\n"

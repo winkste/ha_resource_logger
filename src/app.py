@@ -38,9 +38,10 @@ __version__ = "0.0.1"
 
 #import collections.abc
 #import collections
+import os
 from datetime import timedelta
 #collections.MutableMapping = collections.abc.MutableMapping
-from flask import Flask, redirect, url_for, render_template, request, session, flash, jsonify
+from flask import Flask, redirect, url_for, render_template, request, session, flash, jsonify, send_file
 
 import my_secrets
 #import mqtt_ctrl
@@ -48,7 +49,7 @@ import my_secrets
 import data_analysis as da
 import plotter
 import parameter
-from version import get_complete_story_of_program
+from about import get_complete_story_of_program
 
 
 ################################################################################
@@ -117,7 +118,7 @@ def get_version():
     obj : returns a page that is displayed in the browser
     """
     if "user" in session:
-        return render_template('version.html', page_name="Version",
+        return render_template('about.html', page_name="About",
                                version_info=get_complete_story_of_program().split('\n'))
 
     flash("You are not logged in", "info")
@@ -264,6 +265,26 @@ def data_func():
         return da.get_counters_as_string()
     flash("You are not logged in", "info")
     return redirect(url_for("get_login"))
+
+@app.route('/downloads')
+def download_files():
+    """Get the download html page
+    Returns:
+        _type_: _description_
+    """
+    return render_template('downloads.html')
+
+@app.route('/download/<file_name>')
+def download(file_name):
+    """Handle all downloads
+    Args:
+        file_name (_type_): name of file to be downloaded
+    Returns:
+        _type_: download file
+    """
+    print("/bin/" + file_name)
+    print(os.getcwd())
+    return send_file(os.getcwd() + "/bin/" + file_name, as_attachment=True)
 
 ################################################################################
 # Classes

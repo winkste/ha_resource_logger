@@ -208,20 +208,55 @@ def get_statistics(year:int)->dict:
     # load the data frame
     df = db.load_counter_data_time_indexed()
     # filter for year
-    year_df = df[start_date:end_date]
+    actuals_df = df[start_date:end_date]
     # generate the statistics
     stats_dict = {}
-    if year_df.index.size >= 2:
-        stats_dict["Gasverbrauch (kWh)"] = round(year_df["Gas"][-1] - year_df["Gas"][0], 2)
-        stats_dict["Wasserverbrauch (qm)"] = round(year_df["Water"][-1] - year_df["Water"][0], 2)
-        stats_dict["Strombezug (kWh)"] = round(year_df["Power In"][-1] - year_df["Power In"][0], 2)
-        stats_dict["Strompeinspeisung (kWh)"] = round(year_df["Power Out"][-1] - year_df["Power Out"][0], 2)
-        stats_dict["Stromproduktion (kWh)"] = round(year_df["Power Gen"].sum(), 2)
-        stats_dict["Eigenverbrauch (kWh)"] = round(year_df["Power PV used"].sum(), 2)
-        stats_dict["Stromverbrauch (kWh)"] = round(year_df["Power used"].sum(), 2)
-        stats_dict["Strom für V60 (kWh)"] = round(year_df["Power Car Stephan"][-1] - year_df["Power Car Stephan"][0], 2)
-        stats_dict["Strom für XC40 (kWh)"] = round(year_df["Power Car Heike"][-1] - year_df["Power Car Heike"][0], 2)
-        stats_dict["Strom für alle Autos (kWh)"] = round((year_df["Power Car Stephan"][-1] - year_df["Power Car Stephan"][0]) + (df["Power Car Heike"][-1] - df["Power Car Heike"][0]) + (df["Power Car Wink"][-1] - df["Power Car Wink"][0]), 2)
+    if actuals_df.index.size >= 2:
+        consumtion = round(actuals_df["Gas"][-1] - actuals_df["Gas"][0], 2)
+        stats_dict["Gasverbrauch (kWh)"] = consumtion
+        consumtion = round(actuals_df["Water"][-1] - actuals_df["Water"][0], 2)
+        stats_dict["Wasserverbrauch (qm)"] = consumtion
+        consumtion = round(actuals_df["Power In"][-1] - actuals_df["Power In"][0], 2)
+        stats_dict["Strombezug (kWh)"] = consumtion
+
+        # vehicle energy consumption
+        consumtion = round(actuals_df["Power Car Stephan"][-1] - actuals_df["Power Car Stephan"][0], 2)
+        stats_dict["Strom für V60 (kWh)"] = consumtion
+        consumtion = round(actuals_df["Power Car Heike"][-1] - actuals_df["Power Car Heike"][0], 2)
+        stats_dict["Strom für XC40 (kWh)"] = consumtion
+        consumtion = stats_dict["Strom für V60 (kWh)"] 
+        consumtion = consumtion + stats_dict["Strom für XC40 (kWh)"] 
+        consumtion = round(consumtion + (actuals_df["Power Car Wink"][-1] - actuals_df["Power Car Wink"][0]), 2)
+        stats_dict["Strom für alle Autos (kWh)"] = consumtion
+
+        # energy production statistics
+        stats_dict["Tagessummen Stromproduktion (kWh)"] = round(actuals_df["Power Gen"].sum(), 2)
+        stats_dict["Tagessummen Eigenverbrauch (kWh)"] = round(actuals_df["Power PV used"].sum(), 2)
+        stats_dict["Tagessummen Stromverbrauch (kWh)"] = round(actuals_df["Power used"].sum(), 2)
+        stats_dict["Max Stromproduktion per Tag (kWh)"] = round(actuals_df["Power Gen"].max(), 2)
+        stats_dict["Max Stromproduktion Tag"] = actuals_df["Power Gen"].idxmax()
+        stats_dict
+        # get a subset of the data frame where the power generation is not 0.0
+        actuals_with_pwr_df = actuals_df[actuals_df["Power PV used"] > 0.0]
+        stats_dict["Mittelwert Stromproduktion (kWh)"] = round(actuals_with_pwr_df["Power Gen"].mean(), 2)
+        stats_dict["Mittelwert Eigenverbrauch (kWh)"] = round(actuals_with_pwr_df["Power PV used"].mean(), 2)
+        stats_dict["Mittelwert Tagesverbrauch (kWh)"] = round(actuals_with_pwr_df["Power used"].mean(), 2)
+        stats_dict["Aktueller Verbrauch pro Jahr (kWh)"] = round(stats_dict["Tagessummen Eigenverbrauch (kWh)"] + stats_dict["Strombezug (kWh)"], 2)
+        stats_dict["Geschätzter Verbrauch pro Jahr (kWh)"] = round(actuals_with_pwr_df["Power used"].mean() * 356, 2)
+        stats_dict["Geschätzter Autarkiegrad (%)"] = round(stats_dict["Mittelwert Eigenverbrauch (kWh)"] /
+                                                        stats_dict["Mittelwert Tagesverbrauch (kWh)"] * 100.0, 2)
+        stats_dict["Stromanteil Autos (%)"] = round(stats_dict["Strom für alle Autos (kWh)"] /
+                                                    stats_dict["Strombezug (kWh)"] * 100.0, 2)
+
+        # get the autakie value of each day and add it to the actuals data frame
+        autarks_s = actuals_with_pwr_df["Power PV used"] / actuals_with_pwr_df["Power used"] * 100.0
+        autarks_s = autarks_s.rename('Autark')
+        # normalize it to 100%, everything about 100% is not interesting as this is feed back
+        autarks_s = autarks_s.where(autarks_s <= 100, 100)
+        # add the new autarkie data set to the actuals data frame
+        actuals_with_pwr_df = pd.concat([actuals_with_pwr_df, autarks_s], axis=1)
+
+        stats_dict["Realer Autarkiegrad pro Tag(%)"] = round(actuals_with_pwr_df["Autark"].mean(), 2)
     return stats_dict
 
 def _is_valid_datetime(date_string, date_format='%Y-%m-%d'):
