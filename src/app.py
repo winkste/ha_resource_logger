@@ -41,8 +41,8 @@ __version__ = "0.0.1"
 import os
 from datetime import timedelta
 #collections.MutableMapping = collections.abc.MutableMapping
-from flask import Flask, redirect, url_for, render_template, request, session, flash, jsonify, send_file
-
+from flask import Flask, redirect, url_for, render_template
+from flask import request, session, flash, jsonify, send_file
 import my_secrets
 #import mqtt_ctrl
 #from energy_log import EnergyLog
@@ -138,7 +138,7 @@ def get_new_data_entry_page():
             # get the data from the page
             data_set = request.get_json()
             new_data = data_set['values']
-            # store the data        
+            # store the data
             flash(da.set_new_counter_data_set(new_data))
             #TODO: publish data via mqtt
             return jsonify({'message': 'Values updated successfully'})
@@ -167,7 +167,7 @@ def get_new_history_entry_page():
             #TODO: publish data via mqtt
             return jsonify({'message': 'Values updated successfully'})
         return render_template('new_data.html', jumpPage='/newyear', page_name="Verbräuche",
-                               ccolumn_names=da.get_history_column_names(), 
+                               ccolumn_names=da.get_history_column_names(),
                                initial_data=da.get_last_history_row_as_list())
     flash("You are not logged in", "info")
     return redirect(url_for("get_login"))

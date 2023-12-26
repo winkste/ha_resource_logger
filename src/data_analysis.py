@@ -88,7 +88,6 @@ def set_new_counter_data_set(input_data:list)->str:
     if ops_error_code is None:
         # load the counter data into a time indexed data frame
         data_frame = db.load_counter_data_time_indexed()
-        print(data_frame)
         # prepare the new data set to be integrated into the data frame
         # get the column names from the existing data frame as list
         column_names = data_frame.columns.values.tolist()
@@ -96,18 +95,14 @@ def set_new_counter_data_set(input_data:list)->str:
         new_date_index = pd.to_datetime(input_data[0]).date()
         # slice just the data values without the date
         new_data_set = input_data[1:]
-        # create a new dataframe based on the data set, the column names and the new date based index
+        # create a new dataframe based on the data set,
+        # the column names and the new date based index
         new_row = pd.DataFrame([new_data_set], columns=column_names, index=[new_date_index])
-        print(new_row)
-        print(pd.DataFrame(new_row))
         # concatenate the two data frames to one
         data_frame = pd.concat([data_frame, pd.DataFrame(new_row)], ignore_index=False)
         #data_frame = data_frame.normalize()
-        print(data_frame)
         data_frame.index = pd.to_datetime(data_frame.index)
-        print(data_frame)
         data_frame.index = data_frame.index.normalize()
-        print(data_frame)
         # store the update dataframe back to file
         db.store_counter_data_time_indexed(data_frame)
         ops_error_code = "data successfully stored"
@@ -184,7 +179,8 @@ def set_history_from_list(input_data:list)->str:
         new_data_index = input_data[0]
         # slice just the data values without the date_time
         new_data_set = input_data[1:]
-        # create a new dataframe based on the data set, the column names and the new time based index
+        # create a new dataframe based on the data set, the column names and
+        # the new time based index
         new_row = pd.DataFrame([new_data_set], columns=column_names, index=[new_data_index])
         # concatenate the two data frames to one
         data_frame = pd.concat([data_frame, pd.DataFrame(new_row)], ignore_index=False)
@@ -204,7 +200,7 @@ def get_statistics(year:int)->dict:
     """
     # get the start and end dates of the year
     start_date = date(year, 1, 1)
-    end_date = date(year, 12, 1)
+    end_date = date(year, 12, 31)
     # load the data frame
     df = db.load_counter_data_time_indexed()
     # filter for year
@@ -212,21 +208,24 @@ def get_statistics(year:int)->dict:
     # generate the statistics
     stats_dict = {}
     if actuals_df.index.size >= 2:
-        consumtion = round(actuals_df["Gas"][-1] - actuals_df["Gas"][0], 2)
+        consumtion = round(actuals_df["Gas"].iloc[-1] - actuals_df["Gas"].iloc[0], 2)
         stats_dict["Gasverbrauch (kWh)"] = consumtion
-        consumtion = round(actuals_df["Water"][-1] - actuals_df["Water"][0], 2)
+        consumtion = round(actuals_df["Water"].iloc[-1] - actuals_df["Water"].iloc[0], 2)
         stats_dict["Wasserverbrauch (qm)"] = consumtion
-        consumtion = round(actuals_df["Power In"][-1] - actuals_df["Power In"][0], 2)
+        consumtion = round(actuals_df["Power In"].iloc[-1] - actuals_df["Power In"].iloc[0], 2)
         stats_dict["Strombezug (kWh)"] = consumtion
 
         # vehicle energy consumption
-        consumtion = round(actuals_df["Power Car Stephan"][-1] - actuals_df["Power Car Stephan"][0], 2)
+        consumtion = round(actuals_df["Power Car Stephan"].iloc[-1] -
+                            actuals_df["Power Car Stephan"].iloc[0], 2)
         stats_dict["Strom für V60 (kWh)"] = consumtion
-        consumtion = round(actuals_df["Power Car Heike"][-1] - actuals_df["Power Car Heike"][0], 2)
+        consumtion = round(actuals_df["Power Car Heike"].iloc[-1] -
+                           actuals_df["Power Car Heike"].iloc[0], 2)
         stats_dict["Strom für XC40 (kWh)"] = consumtion
-        consumtion = stats_dict["Strom für V60 (kWh)"] 
+        consumtion = stats_dict["Strom für V60 (kWh)"]
         consumtion = consumtion + stats_dict["Strom für XC40 (kWh)"] 
-        consumtion = round(consumtion + (actuals_df["Power Car Wink"][-1] - actuals_df["Power Car Wink"][0]), 2)
+        consumtion = round(consumtion + (actuals_df["Power Car Wink"].iloc[-1] -
+                                        actuals_df["Power Car Wink"].iloc[0]), 2)
         stats_dict["Strom für alle Autos (kWh)"] = consumtion
 
         # energy production statistics
@@ -235,7 +234,7 @@ def get_statistics(year:int)->dict:
         stats_dict["Tagessummen Stromverbrauch (kWh)"] = round(actuals_df["Power used"].sum(), 2)
         stats_dict["Max Stromproduktion per Tag (kWh)"] = round(actuals_df["Power Gen"].max(), 2)
         stats_dict["Max Stromproduktion Tag"] = actuals_df["Power Gen"].idxmax()
-        stats_dict
+
         # get a subset of the data frame where the power generation is not 0.0
         actuals_with_pwr_df = actuals_df[actuals_df["Power PV used"] > 0.0]
         stats_dict["Mittelwert Stromproduktion (kWh)"] = round(actuals_with_pwr_df["Power Gen"].mean(), 2)
@@ -283,7 +282,7 @@ def _new_counter_set_data_validation(input_data:list)->str:
     """
     if not _is_valid_datetime(input_data[0]):
         return "date format is not accepted"
-   
+
     # check all numbers are integer or floating point numbers
     # with the "." as decimal separator
     for idx, item in enumerate(input_data[1:]):
@@ -303,7 +302,7 @@ def _new_hist_set_data_validation(input_data:list)->str:
     # check if the year is a decimal value
     if not input_data[0].isdecimal():
         return f"year format: {input_data[0]} not accepted"
-    
+
     # check all numbers are integer or floating point numbers
     # with the "." as decimal separator
     for idx, item in enumerate(input_data[1:]):
@@ -311,9 +310,9 @@ def _new_hist_set_data_validation(input_data:list)->str:
             input_data[idx + 1] = item.replace(",", ".")
         if _is_float_string(input_data[idx + 1]) is False:
             return f"Value {input_data[idx + 1]} is not a number representation."
-    
+
     return None
-        
+
 def _is_float_string(input_string)->bool:
     """checks if string represents a number
     Args:

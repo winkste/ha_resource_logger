@@ -11,30 +11,29 @@ The project can be executed on three drifferent ways:
 
 ### Web Interface
 The software is using flask and bootstrap to build a simple web application. It is using login mechanism controlled by a user dictionary in the my_secrets.py file.
+The main menu looks like:
+![Main Menu](documents/Menu_Screen.png)
+
 The dialogs are:
 - Login:
-![Login](documents/Login.png)
-
-- Counter (Entry of current counter values):
-![Counter Entry](<documents/Enter Counters.png>)
-
+![Login](documents/Login_Screen.jpg)
+- Enter counter values:
+![Counter Entry](documents/Data_Entry_Counter_Screen.jpg)
 - Enter Consume over year:
-![Alt text](<documents/Enter Consumes.png>)
-
+![Enter Consumes](documents/Data_Entry_Consumes.jpg)
 - Consumptions per year (Plot all collected data)
-![Consumes plot](<documents/Consume Plot.png>)
+![History Plot](documents/History_Screen.jpg)
+- Table View Counters:
+![Table Counter](documents/Table_Counter_Screen.jpg)
+- Table View Consumtions per year
+![Table Consumtions per year](documents/Table_Consume_Screen.jpg)
+- Statistics Table View
+![Statistics Table](documents/Table_Statistics_Screen.jpg)
+- Download Data files
+![Alt text](documents/Download_Screen.jpg)
+- About View
+![Alt text](documents/About_Screen.jpg)
 
-- Table Counter:
-  ![Table Counter](<documents/Counter Table.png>)
-
-- Table Consumtions per year
-  ![Table Consumtions per year](<documents/Table Consumables.png>)
-
-- Statistics Table
-![Stats Table](documents/Statistics.png)
-
-- Logout (redirects to login)
-![Logout](documents/Logout.png)
 
 The values are stored currently in two separate CSV files located in bin folder. The storage and load is encapsulated by database_hdl.py and could be replaced by any other storage methods like SQL databases.
 
@@ -129,6 +128,4 @@ docker save -o pyth-ha-rec.tar pyth-ha-rec
 - Update the readme
 - build the docker containers in github actions
 - publish actual year consumptions to home assistant via MQTT
-- add download buttons for the data files (https://dev.to/grahammorby/let-users-download-files-in-flask-5gjg)
-- clean up requirements file
 - update the counters view html page with pictures
