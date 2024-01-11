@@ -125,7 +125,5 @@ docker save -o pyth-ha-rec.tar pyth-ha-rec
 ```
 
 ## TODO
-- Update the readme
-- build the docker containers in github actions
 - publish actual year consumptions to home assistant via MQTT
 - update the counters view html page with pictures

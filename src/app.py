@@ -39,7 +39,7 @@ __version__ = "0.0.1"
 #import collections.abc
 #import collections
 import os
-from datetime import timedelta
+from datetime import timedelta, date
 #collections.MutableMapping = collections.abc.MutableMapping
 from flask import Flask, redirect, url_for, render_template
 from flask import request, session, flash, jsonify, send_file
@@ -231,7 +231,7 @@ def get_statistics_view():
     obj : returns a page that is displayed in the browser
     """
     if "user" in session:
-        stats_data = da.get_statistics(2023)
+        stats_data = da.get_statistics(date.today().year)
         # Zipping the data before passing it to the template
         zipped_data = zip(list(stats_data.keys()), list(stats_data.values()))
         return render_template('view_stats.html', page_name="Statistiken", stats_data=zipped_data)
